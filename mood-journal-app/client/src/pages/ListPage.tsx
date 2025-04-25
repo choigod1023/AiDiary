@@ -16,7 +16,10 @@ const ListPage: React.FC = () => {
     const fetchEntries = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/diary`
+          `${import.meta.env.VITE_API_URL}/api/diary`,
+          {
+            credentials: "include",
+          }
         );
         if (response.ok) {
           const data = await response.json();

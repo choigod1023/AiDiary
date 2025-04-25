@@ -21,7 +21,10 @@ const DetailPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/diary/${id}`
+          `${import.meta.env.VITE_API_URL}/api/diary/${id}`,
+          {
+            credentials: "include",
+          }
         );
 
         if (response.ok) {

@@ -23,7 +23,19 @@ if (!process.env.MONGODB_URI) {
 }
 
 const app = express();
-app.use(cors());
+
+// CORS 설정
+const corsOptions = {
+  origin: [
+    "http://localhost:5173", // 개발 환경
+    "https://ai-diary-client.vercel.app", // 프로덕션 환경
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // MongoDB 연결
