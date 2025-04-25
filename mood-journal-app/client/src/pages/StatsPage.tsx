@@ -27,7 +27,7 @@ const StatsPage: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/diary/emotion-stats"
+          `${import.meta.env.VITE_API_URL}/api/diary/emotion-stats`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch emotion stats");

@@ -22,13 +22,16 @@ const WritePage: React.FC = () => {
       date: formattedDate,
     };
     try {
-      const response = await fetch("http://localhost:5000/api/diary", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEntry),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/diary`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newEntry),
+        }
+      );
       if (response.ok) {
         setEntry("");
         alert("일기가 저장되었습니다!");
@@ -42,12 +45,12 @@ const WritePage: React.FC = () => {
   };
 
   return (
-    <div className=" flex-1 flex items-center justify-center p-8 ">
+    <div className="flex items-center justify-center flex-1 p-8 ">
       <div className="max-w-8xl w-[50vw]  mx-auto bg-gray-800 shadow-md rounded-lg p-8">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-sans"
+            className="px-4 py-2 font-sans text-white transition-colors bg-gray-600 rounded-lg hover:bg-gray-700"
           >
             뒤로 가기
           </button>
@@ -55,13 +58,13 @@ const WritePage: React.FC = () => {
           <div className="w-[100px]"></div> {/* 균형을 위한 빈 div */}
         </div>
         <textarea
-          className="w-full h-80 p-6 border-2 border-gray-600 bg-gray-900 text-white rounded-lg focus:outline-none focus:border-blue-500 resize-none font-sans"
+          className="w-full p-6 font-sans text-white bg-gray-900 border-2 border-gray-600 rounded-lg resize-none h-80 focus:outline-none focus:border-blue-500"
           placeholder="여기에 일기를 작성하세요..."
           value={entry}
           onChange={(e) => setEntry(e.target.value)}
         ></textarea>
         <button
-          className="mt-8 w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors font-sans"
+          className="w-full py-4 mt-8 font-sans font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
           onClick={handleSave}
         >
           일기 저장

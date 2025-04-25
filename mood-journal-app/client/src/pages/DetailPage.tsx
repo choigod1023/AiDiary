@@ -20,7 +20,9 @@ const DetailPage: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/diary/${id}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/diary/${id}`
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -52,7 +54,7 @@ const DetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex items-center justify-center h-screen">
         <div className="text-2xl text-blue-500">로딩 중...</div>
       </div>
     );
@@ -60,16 +62,16 @@ const DetailPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="w-full max-w-6xl mx-auto p-8 bg-gray-800 text-white rounded-lg">
-        <div className="flex justify-between items-center mb-6">
+      <div className="w-full max-w-6xl p-8 mx-auto text-white bg-gray-800 rounded-lg">
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={handleBack}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             뒤로 가기
           </button>
         </div>
-        <div className="bg-red-900 p-4 rounded-lg">
+        <div className="p-4 bg-red-900 rounded-lg">
           <p className="text-red-200">{error}</p>
         </div>
       </div>
@@ -78,16 +80,16 @@ const DetailPage: React.FC = () => {
 
   if (!entry) {
     return (
-      <div className="w-full max-w-6xl mx-auto p-8 bg-gray-800 text-white rounded-lg">
-        <div className="flex justify-between items-center mb-6">
+      <div className="w-full max-w-6xl p-8 mx-auto text-white bg-gray-800 rounded-lg">
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={handleBack}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             뒤로 가기
           </button>
         </div>
-        <div className="bg-yellow-900 p-4 rounded-lg">
+        <div className="p-4 bg-yellow-900 rounded-lg">
           <p className="text-yellow-200">일기 항목을 찾을 수 없습니다.</p>
         </div>
       </div>
@@ -95,7 +97,7 @@ const DetailPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-8">
+    <div className="w-full max-w-6xl p-8 mx-auto">
       <DiaryDetail entry={entry} handleBack={handleBack} />
     </div>
   );

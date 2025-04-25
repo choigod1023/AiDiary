@@ -15,7 +15,9 @@ const ListPage: React.FC = () => {
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/diary");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/diary`
+        );
         if (response.ok) {
           const data = await response.json();
           setEntries(data);
