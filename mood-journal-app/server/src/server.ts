@@ -26,10 +26,10 @@ const app = express();
 
 // CORS 설정
 const corsOptions = {
-  origin: [
-    "http://localhost:5173", // 개발 환경
-    "https://ai-diary-client.vercel.app", // 프로덕션 환경
-  ],
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://ai-diary-eight-drab.vercel.app" // 프로덕션 환경
+      : "http://localhost:5173", // 개발 환경
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

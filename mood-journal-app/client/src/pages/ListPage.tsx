@@ -35,12 +35,12 @@ const ListPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex-1 flex items-center justify-center p-8 ">
-      <div className="max-w-4xl w-full mx-auto bg-gray-800 text-white rounded-lg p-8">
+    <div className="flex items-center justify-center flex-1 p-8 ">
+      <div className="w-full max-w-4xl p-8 mx-auto text-white bg-gray-800 rounded-lg">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            className="px-4 py-2 text-white transition-colors bg-gray-600 rounded-lg hover:bg-gray-700"
           >
             뒤로 가기
           </button>
@@ -52,7 +52,7 @@ const ListPage: React.FC = () => {
           {entries.map((entry) => (
             <li
               key={entry.id}
-              className="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors"
+              className="p-4 transition-colors bg-gray-700 rounded-lg hover:bg-gray-600"
             >
               <Link to={`/detail/${entry.id}`} className="block">
                 <strong>{entry.date}</strong>: {entry.emotion} - {entry.title}
