@@ -25,17 +25,34 @@ if (!process.env.MONGODB_URI) {
 const app = express();
 
 // CORS 설정
+const allowedOrigins = [
+  "https://ai-diary-eight-drab.vercel.app",
+  "http://localhost:5173",
+];
+
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? "https://ai-diary-eight-drab.vercel.app" // 프로덕션 환경
-      : "http://localhost:5173", // 개발 환경
+  origin: function (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
+  optionsSuccessStatus: 200,
 };
 
+// CORS 미들웨어 적용
 app.use(cors(corsOptions));
+
+// OPTIONS 요청 처리
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 
 // MongoDB 연결
