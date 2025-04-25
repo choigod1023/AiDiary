@@ -9,15 +9,31 @@ import {
   getLatestEmotionAnalyses,
   getOverallEmotionStats,
 } from "../utils/emotionAnalysis";
-import dotenv from "dotenv";
 
-dotenv.config();
+// 개발 환경에서만 dotenv를 사용
+if (process.env.NODE_ENV !== "production") {
+  const dotenv = require("dotenv");
+  dotenv.config();
+}
+
+// MongoDB 연결 문자열 확인
+if (!process.env.MONGODB_URI) {
+  console.error("MONGODB_URI 환경 변수가 설정되지 않았습니다.");
+  process.exit(1);
+}
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 // MongoDB 연결
-https: mongoose.connect("mongodb://localhost:27017/diaryApp");
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 // 일기 저장 API
 app.post("/api/diary", async (req: Request, res: Response) => {
