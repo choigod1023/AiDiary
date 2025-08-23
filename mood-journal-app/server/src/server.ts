@@ -40,9 +40,16 @@ const corsOptions = {
     origin: string | undefined,
     callback: (err: Error | null, allow?: boolean) => void
   ) {
+    // 개발 환경에서는 모든 origin 허용
+    if (process.env.NODE_ENV !== "production") {
+      callback(null, true);
+      return;
+    }
+
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log("CORS blocked origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
