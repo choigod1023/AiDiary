@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* client/src/index.css */
+html,
+body,
+#root {
+  min-height: 100vh;
+  padding: 0;
+}
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
 :root {
   font-family: "Noto Sans KR", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -26,14 +37,6 @@ a {
 }
 a:hover {
   color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
 }
 
 h1 {

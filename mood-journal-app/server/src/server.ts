@@ -2,7 +2,11 @@ import express, { Request, RequestHandler, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import { DiaryEntryModel } from "../models/DiaryEntry";
-import { summarizeTitle, convertEmotionToEmoji } from "../utils/summaryUtils";
+import {
+  summarizeTitle,
+  convertEmotionToEmoji,
+  generateAIFeedback,
+} from "../utils/summaryUtils";
 import {
   analyzeDiaryEntries,
   saveEmotionAnalysis,
@@ -28,6 +32,7 @@ const app = express();
 const allowedOrigins = [
   "https://ai-diary-eight-drab.vercel.app",
   "http://localhost:5173",
+  "http://choigod1023.p-e.kr:5173",
 ];
 
 const corsOptions = {
@@ -63,6 +68,8 @@ mongoose
     console.error("MongoDB connection error:", err);
     process.exit(1);
   });
+
+// (moved) GET /api/diary/:id is defined after static routes to avoid conflicts
 
 // 일기 저장 API
 app.post("/api/diary", async (req: Request, res: Response) => {
@@ -138,7 +145,7 @@ app.get("/api/diary/emotion-stats", async (req: Request, res: Response) => {
   }
 });
 
-// 특정 ID의 일기 조회 API
+// 특정 ID의 일기 조회 API (static routes above; param route below)
 app.get("/api/diary/:id", (async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -163,6 +170,88 @@ app.get("/api/diary/:id", (async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch diary entry" });
   }
 }) as unknown as RequestHandler);
+
+// 일기 삭제 API
+app.delete("/api/diary/:id", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // ID 유효성 검사
+    const numericId = Number(id);
+    if (isNaN(numericId)) {
+      return res
+        .status(400)
+        .json({ error: "유효하지 않은 ID 형식입니다. 숫자 ID가 필요합니다." });
+    }
+
+    // 일기 항목 찾기
+    const entry = await DiaryEntryModel.findOne({ id: numericId });
+    if (!entry) {
+      return res.status(404).json({ error: "Diary entry not found" });
+    }
+
+    // 일기 항목 삭제
+    await DiaryEntryModel.deleteOne({ id: numericId });
+
+    // 관련 감정 분석 데이터도 삭제 (선택사항)
+    try {
+      const { EmotionAnalysisModel } = require("../models/EmotionAnalysis");
+      await EmotionAnalysisModel.deleteOne({ diaryId: numericId });
+    } catch (error) {
+      console.log("감정 분석 데이터 삭제 실패 (선택사항):", error);
+    }
+
+    res.json({ message: "Diary entry deleted successfully!" });
+  } catch (error) {
+    console.error("Error deleting diary entry:", error);
+    res.status(500).json({ error: "Failed to delete diary entry" });
+  }
+});
+
+// AI 피드백 생성 API (낙장불입: 한번 생성되면 저장되고 재생성 불가)
+app.post("/api/diary/:id/ai-feedback", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { entry, emotion } = req.body;
+
+    const numericId = Number(id);
+    if (isNaN(numericId)) {
+      return res
+        .status(400)
+        .json({ error: "유효하지 않은 ID 형식입니다. 숫자 ID가 필요합니다." });
+    }
+
+    const diaryEntry = await DiaryEntryModel.findOne({ id: numericId });
+    if (!diaryEntry) {
+      return res.status(404).json({ error: "Diary entry not found" });
+    }
+
+    // 이미 피드백이 존재하면 재생성 금지
+    if (diaryEntry.aiFeedback) {
+      return res.json({
+        feedback: diaryEntry.aiFeedback,
+        locked: true,
+        at: diaryEntry.aiFeedbackAt,
+      });
+    }
+
+    // AI 피드백 생성
+    const feedback = await generateAIFeedback(
+      entry ?? diaryEntry.entry,
+      emotion ?? diaryEntry.emotion
+    );
+
+    // 저장 및 반환
+    diaryEntry.aiFeedback = feedback;
+    diaryEntry.aiFeedbackAt = new Date();
+    await diaryEntry.save();
+
+    res.json({ feedback, locked: true, at: diaryEntry.aiFeedbackAt });
+  } catch (error) {
+    console.error("Error generating AI feedback:", error);
+    res.status(500).json({ error: "Failed to generate AI feedback" });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

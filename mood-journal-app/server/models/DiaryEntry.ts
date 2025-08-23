@@ -10,6 +10,8 @@ export interface IDiaryEntry extends Document {
   emotionAnalysis?: {
     [key: string]: number;
   };
+  aiFeedback?: string;
+  aiFeedbackAt?: Date;
 }
 
 const diarySchema = new Schema({
@@ -23,6 +25,8 @@ const diarySchema = new Schema({
     of: Number,
     default: {},
   },
+  aiFeedback: { type: String, default: undefined },
+  aiFeedbackAt: { type: Date, default: undefined },
 });
 
 // 모델 생성

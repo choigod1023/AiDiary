@@ -110,21 +110,16 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
       legend: {
         position: "right" as const,
         labels: {
-          color: "#e0e0e0",
-          font: {
-            size: 14,
-          },
+          color: "#1f2937", // stone-800 for light
+          font: { size: 14 },
           padding: 20,
         },
       },
       title: {
         display: true,
         text: "평균 감정 비율",
-        color: "#ffffff",
-        font: {
-          size: 18,
-          weight: "bold" as const,
-        },
+        color: "#1f2937",
+        font: { size: 18, weight: "bold" as const },
       },
       tooltip: {
         callbacks: {
@@ -136,15 +131,12 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
         },
       },
       datalabels: {
-        color: "#ffffff",
-        font: {
-          size: 14,
-          weight: "bold" as const,
-        },
+        color: "#1f2937",
+        font: { size: 14, weight: "bold" as const },
         formatter: (value: number) => `${value.toFixed(1)}%`,
       },
     },
-  };
+  } as any;
 
   const barOptions = {
     responsive: true,
@@ -152,65 +144,45 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
     plugins: {
       legend: {
         position: "top" as const,
-        labels: {
-          color: "#e0e0e0",
-          font: {
-            size: 14,
-          },
-          padding: 20,
-        },
+        labels: { color: "#1f2937", font: { size: 14 }, padding: 20 },
       },
       title: {
         display: true,
         text: "감정 비율 변화",
-        color: "#ffffff",
-        font: {
-          size: 18,
-          weight: "bold" as const,
-        },
+        color: "#1f2937",
+        font: { size: 18, weight: "bold" as const },
       },
     },
     scales: {
       x: {
         stacked: true,
-        grid: {
-          color: "rgba(255, 255, 255, 0.1)",
-        },
-        ticks: {
-          color: "#e0e0e0",
-          font: {
-            size: 12,
-          },
-        },
+        grid: { color: "rgba(31, 41, 55, 0.1)" },
+        ticks: { color: "#1f2937", font: { size: 12 } },
       },
       y: {
         stacked: true,
         beginAtZero: true,
         max: 100,
         ticks: {
-          color: "#e0e0e0",
-          font: {
-            size: 12,
-          },
+          color: "#1f2937",
+          font: { size: 12 },
           callback: function (value: any) {
             return `${value}%`;
           },
         },
-        grid: {
-          color: "rgba(255, 255, 255, 0.1)",
-        },
+        grid: { color: "rgba(31, 41, 55, 0.1)" },
       },
     },
-  };
+  } as any;
 
   return (
-    <div className="w-full flex flex-col gap-12">
-      <div className="w-full bg-gray-800 p-8 rounded-xl shadow-lg h-[600px] flex justify-center items-center">
+    <div className="flex flex-col gap-12 w-full">
+      <div className="w-full bg-white border border-amber-200 p-8 rounded-xl shadow-sm h-[600px] flex justify-center items-center dark:bg-gray-800 dark:border-gray-700">
         <div className="w-full h-full">
           <Doughnut data={doughnutChartData} options={doughnutOptions} />
         </div>
       </div>
-      <div className="w-full bg-gray-800 p-8 rounded-xl shadow-lg h-[700px]">
+      <div className="w-full bg-white border border-amber-200 p-8 rounded-xl shadow-sm h-[700px] dark:bg-gray-800 dark:border-gray-700">
         <div className="w-full h-full">
           <Bar data={stackedBarData} options={barOptions} />
         </div>

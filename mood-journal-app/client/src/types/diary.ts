@@ -4,4 +4,5 @@ export interface DiaryEntry {
   date: string;
   emotion: string;
   entry: string;
+  aiFeedback?: string;
 }
