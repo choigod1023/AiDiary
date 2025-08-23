@@ -9,7 +9,7 @@ const openai = new OpenAI({
 export async function summarizeTitle(entry: string): Promise<string> {
   // GPT API를 호출하여 제목을 요약
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-4o-mini", //openai
     messages: [
       {
         role: "system",
