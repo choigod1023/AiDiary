@@ -123,9 +123,10 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: any) {
-            const label = context.label || "";
-            const value = context.raw || 0;
+          label: function (context: unknown) {
+            const ctx = context as { label?: string; raw?: number };
+            const label = ctx.label || "";
+            const value = ctx.raw || 0;
             return `${label}: ${value.toFixed(1)}%`;
           },
         },
@@ -136,7 +137,7 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
         formatter: (value: number) => `${value.toFixed(1)}%`,
       },
     },
-  } as any;
+  };
 
   const barOptions = {
     responsive: true,
@@ -166,14 +167,14 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
         ticks: {
           color: "#1f2937",
           font: { size: 12 },
-          callback: function (value: any) {
+          callback: function (value: string | number) {
             return `${value}%`;
           },
         },
         grid: { color: "rgba(31, 41, 55, 0.1)" },
       },
     },
-  } as any;
+  };
 
   return (
     <div className="flex flex-col gap-12 w-full">

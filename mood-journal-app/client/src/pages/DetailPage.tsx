@@ -1,59 +1,70 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { diaryApi } from "../utils/api";
 import DiaryDetail from "../components/DiaryDetail";
 import { DiaryEntry } from "../types/diary";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const DetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [entry, setEntry] = useState<DiaryEntry | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [showAIFeedback, setShowAIFeedback] = useState<boolean>(false);
   const [aiFeedback, setAIFeedback] = useState<string>("");
   const [aiLoading, setAILoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchEntry = async () => {
-      if (!id) {
-        setError("ID가 제공되지 않았습니다.");
-        setLoading(false);
-        return;
-      }
+  // React Query를 사용한 일기 조회
+  const {
+    data: entry,
+    isLoading,
+    error,
+  } = useQuery<DiaryEntry>({
+    queryKey: ["diary", id],
+    queryFn: () => diaryApi.getById(id!),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5분
+  });
 
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/diary/${id}`,
-          {
-            credentials: "include",
-          }
-        );
+  // 일기 삭제 mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => diaryApi.delete(id),
+    onSuccess: () => {
+      alert("일기가 성공적으로 삭제되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["diary-list"] });
+      navigate("/list");
+    },
+    onError: (error: Error) => {
+      console.error("일기 삭제 중 오류 발생:", error);
+      alert("일기 삭제에 실패했습니다.");
+    },
+  });
 
-        if (response.ok) {
-          const data = await response.json();
-          const formattedEntry: DiaryEntry = {
-            id: data.id,
-            title: data.title || "제목 없음",
-            date: data.date,
-            emotion: data.emotion,
-            entry: data.entry,
-            aiFeedback: data.aiFeedback,
-          };
-          setEntry(formattedEntry);
-        } else {
-          setError("일기 항목을 불러오는데 실패했습니다.");
+  // AI 피드백 요청 mutation
+  const feedbackMutation = useMutation({
+    mutationFn: (data: { id: string; entry: string; emotion: string }) =>
+      diaryApi.requestFeedback(data.id, {
+        entry: data.entry,
+        emotion: data.emotion,
+      }),
+    onSuccess: (data) => {
+      setAIFeedback(data.feedback);
+      setShowAIFeedback(true);
+      setAILoading(false);
+      // 캐시 업데이트
+      queryClient.setQueryData(["diary", id], (old: DiaryEntry | undefined) => {
+        if (old) {
+          return { ...old, aiFeedback: data.feedback };
         }
-      } catch (error) {
-        console.error("일기 항목을 불러오는 중 오류 발생:", error);
-        setError("서버 연결에 문제가 발생했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEntry();
-  }, [id]);
+        return old;
+      });
+    },
+    onError: (error: Error) => {
+      console.error("AI 피드백 요청 중 오류 발생:", error);
+      alert("AI 피드백 요청에 실패했습니다.");
+      setAILoading(false);
+    },
+  });
 
   const handleBack = () => {
     navigate(-1);
@@ -70,76 +81,26 @@ const DetailPage: React.FC = () => {
       return;
     }
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/diary/${id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (response.ok) {
-        alert("일기가 성공적으로 삭제되었습니다.");
-        navigate("/list"); // 리스트 이동
-      } else {
-        const errorData = await response.json();
-        alert(
-          `삭제 실패: ${errorData.error || "알 수 없는 오류가 발생했습니다."}`
-        );
-      }
-    } catch (error) {
-      console.error("일기 삭제 중 오류 발생:", error);
-      alert("서버 연결에 문제가 발생했습니다.");
-    }
+    deleteMutation.mutate(id);
   };
 
   const handleAIFeedback = async () => {
-    if (!entry) return;
+    if (!entry || !id) return;
 
     setAILoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/diary/${id}/ai-feedback`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            entry: entry.entry,
-            emotion: entry.emotion,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        // 낙장불입: 서버가 저장한 값을 그대로 반영
-        setAIFeedback(data.feedback);
-        setShowAIFeedback(true);
-        setEntry({ ...entry, aiFeedback: data.feedback });
-      } else {
-        const errorData = await response.json();
-        alert(
-          `AI 피드백 요청 실패: ${
-            errorData.error || "알 수 없는 오류가 발생했습니다."
-          }`
-        );
-      }
-    } catch (error) {
-      console.error("AI 피드백 요청 중 오류 발생:", error);
-      alert("서버 연결에 문제가 발생했습니다.");
-    } finally {
-      setAILoading(false);
-    }
+    feedbackMutation.mutate({
+      id,
+      entry: entry.entry,
+      emotion: entry.emotion,
+    });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center w-full min-h-screen text-gray-900 bg-amber-50 min-w-screen dark:bg-gray-900 dark:text-white">
-        <div className="text-2xl text-blue-500">로딩 중...</div>
+        <div className="flex justify-center items-center py-16">
+          <LoadingSpinner size="lg" text="일기를 불러오는 중..." />
+        </div>
       </div>
     );
   }
@@ -157,7 +118,9 @@ const DetailPage: React.FC = () => {
             </button>
           </div>
           <div className="p-4 bg-red-100 rounded-lg border border-red-200 dark:bg-red-900 dark:border-red-800">
-            <p className="text-red-800 dark:text-red-200">{error}</p>
+            <p className="text-red-800 dark:text-red-200">
+              일기 항목을 불러오는데 실패했습니다. 다시 시도해주세요.
+            </p>
           </div>
         </div>
       </div>
