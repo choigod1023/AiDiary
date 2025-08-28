@@ -10,6 +10,20 @@ export const api = ky.create({
     limit: 2,
     methods: ["get", "post", "put", "delete"],
   },
+  hooks: {
+    beforeRequest: [
+      (request) => {
+        try {
+          const token = localStorage.getItem("auth_token");
+          if (token) {
+            request.headers.set("Authorization", `Bearer ${token}`);
+          }
+        } catch {
+          // ignore storage access errors
+        }
+      },
+    ],
+  },
 });
 
 import { DiaryEntry } from "../types/diary";
