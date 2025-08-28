@@ -21,7 +21,7 @@ export const authApi = {
   googleLogin: (
     credential: string
   ): Promise<{ success: boolean; token: string; user: User }> =>
-    api.post("api/auth/google", { json: { credential } }).json(),
+    api.post("api/auth/google", { json: { accessToken: credential } }).json(),
 
   // Naver OAuth 로그인
   naverLogin: (
