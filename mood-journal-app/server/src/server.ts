@@ -13,6 +13,14 @@ import {
   getLatestEmotionAnalyses,
   getOverallEmotionStats,
 } from "../utils/emotionAnalysis";
+import swaggerUi from "swagger-ui-express";
+import { specs } from "./swagger";
+import diaryRoutes from "./routes/diaryRoutes";
+import authRoutes from "./authRoutes";
+import commentRoutes from "./routes/commentRoutes";
+import emotionRoutes from "./routes/emotionRoutes";
+import aiFeedbackRoutes from "./routes/aiFeedbackRoutes";
+import shareRoutes from "./routes/shareRoutes";
 
 // 개발 환경에서만 dotenv를 사용
 if (process.env.NODE_ENV !== "production") {
@@ -75,6 +83,17 @@ mongoose
     console.error("MongoDB connection error:", err);
     process.exit(1);
   });
+
+// Swagger UI 마운트
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+// API 라우트들 마운트
+app.use("/api/auth", authRoutes);
+app.use("/api/diary", diaryRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/emotions", emotionRoutes);
+app.use("/api/ai-feedback", aiFeedbackRoutes);
+app.use("/api/share", shareRoutes);
 
 // (moved) GET /api/diary/:id is defined after static routes to avoid conflicts
 
