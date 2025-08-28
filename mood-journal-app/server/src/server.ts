@@ -39,6 +39,7 @@ const app = express();
 // CORS 설정
 const allowedOrigins = [
   "https://ai-diary-eight-drab.vercel.app",
+  "https://ai-diary-server.vercel.app",
   "http://localhost:5173",
   "http://choigod1023.p-e.kr:5173",
 ];
@@ -280,6 +281,10 @@ app.post("/api/diary/:id/ai-feedback", async (req: Request, res: Response) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;
