@@ -1,8 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IComment extends Document {
-  id: number;
-  entryId: number; // DiaryEntry.id (number)
+export interface IComment {
+  commentId: number; // id 대신 commentId 사용
+  entryId: number; // DiaryEntry.entryId (number)
   shareToken: string; // required to validate shared access
   authorName?: string;
   content: string;
@@ -10,9 +10,12 @@ export interface IComment extends Document {
   updatedAt: Date;
 }
 
+// Document와 결합된 인터페이스
+export interface ICommentDocument extends IComment, Document {}
+
 const commentSchema = new Schema(
   {
-    id: { type: Number, required: true, unique: true },
+    commentId: { type: Number, required: true, unique: true }, // id 대신 commentId 사용
     entryId: { type: Number, required: true, index: true },
     shareToken: { type: String, required: true, index: true },
     authorName: { type: String },
@@ -23,4 +26,7 @@ const commentSchema = new Schema(
 
 commentSchema.index({ entryId: 1, createdAt: -1 });
 
-export const CommentModel = mongoose.model<IComment>("Comment", commentSchema);
+export const CommentModel = mongoose.model<ICommentDocument>(
+  "Comment",
+  commentSchema
+);

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-export interface IUser extends Document {
+export interface IUser {
   email: string;
   name: string;
   avatar?: string;
@@ -10,7 +10,10 @@ export interface IUser extends Document {
   lastLoginAt: Date;
 }
 
-const UserSchema = new Schema<IUser>({
+// Document와 결합된 인터페이스
+export interface IUserDocument extends IUser, Document {}
+
+const UserSchema = new Schema<IUserDocument>({
   email: {
     type: String,
     required: true,
@@ -62,4 +65,4 @@ UserSchema.statics.findByProvider = function (
   return this.findOne({ provider, providerId });
 };
 
-export default mongoose.model<IUser>("User", UserSchema);
+export default mongoose.model<IUserDocument>("User", UserSchema);

@@ -10,22 +10,34 @@ export const api = ky.create({
     limit: 2,
     methods: ["get", "post", "put", "delete"],
   },
-  hooks: {
-    beforeRequest: [
-      (request) => {
-        console.log("API Request:", request.method, request.url);
-      },
-    ],
-    afterResponse: [
-      (request, options, response) => {
-        console.log("API Response:", response.status, response.url);
-        return response;
-      },
-    ],
-  },
 });
 
 import { DiaryEntry } from "../types/diary";
+
+// 인증 API
+export const authApi = {
+  // Google OAuth 로그인
+  googleLogin: (
+    credential: string
+  ): Promise<{ success: boolean; token: string; user: any }> =>
+    api.post("api/auth/google", { json: { credential } }).json(),
+
+  // Naver OAuth 로그인
+  naverLogin: (
+    accessToken: string
+  ): Promise<{ success: boolean; token: string; user: any }> =>
+    api.post("api/auth/naver", { json: { accessToken } }).json(),
+
+  // 토큰 검증
+  verifyToken: (): Promise<{ success: boolean }> =>
+    api.get("api/auth/verify").json(),
+
+  // 로그아웃
+  logout: (): Promise<void> => api.post("api/auth/logout").json(),
+
+  // 사용자 정보 조회
+  getProfile: (): Promise<any> => api.get("api/auth/profile").json(),
+};
 
 // API 함수들
 export const diaryApi = {
@@ -64,6 +76,27 @@ export const diaryApi = {
     api
       .get("api/diary/emotion-analysis", {
         searchParams: limit ? { limit: limit.toString() } : {},
+      })
+      .json(),
+
+  // 댓글 목록 조회
+  getComments: (id: string, token: string): Promise<{ comments: any[] }> =>
+    api
+      .get(`api/diary/${id}/comments`, {
+        searchParams: { token },
+      })
+      .json(),
+
+  // 댓글 작성
+  addComment: (
+    id: string,
+    token: string,
+    data: { content: string; authorName?: string }
+  ): Promise<{ comment: any }> =>
+    api
+      .post(`api/diary/${id}/comments`, {
+        searchParams: { token },
+        json: data,
       })
       .json(),
 };

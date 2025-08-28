@@ -217,22 +217,29 @@ const ServerComments: React.FC<{ entryId: string; shareToken?: string }> = ({
               첫 댓글을 남겨보세요
             </li>
           )}
-          {data?.comments.map((c) => (
-            <li
-              key={c.id}
-              className="p-2 bg-amber-50 rounded border border-amber-200 dark:bg-gray-800 dark:border-gray-700"
-            >
-              <div className="text-sm text-gray-700 dark:text-gray-200">
-                {c.authorName ? (
-                  <strong className="mr-2">{c.authorName}</strong>
-                ) : null}
-                {c.content}
-              </div>
-              <div className="text-xs text-gray-400">
-                {new Date(c.createdAt).toLocaleString()}
-              </div>
-            </li>
-          ))}
+          {data?.comments.map(
+            (c: {
+              id: string;
+              authorName?: string;
+              content: string;
+              createdAt: string;
+            }) => (
+              <li
+                key={c.id}
+                className="p-2 bg-amber-50 rounded border border-amber-200 dark:bg-gray-800 dark:border-gray-700"
+              >
+                <div className="text-sm text-gray-700 dark:text-gray-200">
+                  {c.authorName ? (
+                    <strong className="mr-2">{c.authorName}</strong>
+                  ) : null}
+                  {c.content}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {new Date(c.createdAt).toLocaleString()}
+                </div>
+              </li>
+            )
+          )}
         </ul>
       )}
     </div>

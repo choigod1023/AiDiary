@@ -268,7 +268,7 @@ router.get("/:id", async (req: Request, res: Response) => {
         .json({ error: "유효하지 않은 ID 형식입니다. 숫자 ID가 필요합니다." });
     }
 
-    const entry = await DiaryEntryModel.findOne({ id: numericId });
+    const entry = await DiaryEntryModel.findOne({ entryId: numericId });
 
     if (!entry) {
       return res.status(404).json({ error: "Diary entry not found" });
@@ -359,7 +359,7 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
     const userId = (req as any).user.id;
     const { title, entry, useAITitle = false } = req.body;
 
-    const diaryEntry = await DiaryEntryModel.findOne({ id: Number(id) });
+    const diaryEntry = await DiaryEntryModel.findOne({ entryId: Number(id) });
     if (!diaryEntry) {
       return res.status(404).json({ error: "일기를 찾을 수 없습니다." });
     }
@@ -394,7 +394,7 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
     }
 
     const updatedEntry = await DiaryEntryModel.findOneAndUpdate(
-      { id: Number(id) },
+      { entryId: Number(id) },
       {
         title: finalTitle,
         entry,
@@ -458,7 +458,7 @@ router.delete(
       const { id } = req.params;
       const userId = (req as any).user.id;
 
-      const entry = await DiaryEntryModel.findOne({ id: Number(id) });
+      const entry = await DiaryEntryModel.findOne({ entryId: Number(id) });
       if (!entry) {
         return res.status(404).json({ error: "일기를 찾을 수 없습니다." });
       }
@@ -467,7 +467,7 @@ router.delete(
         return res.status(403).json({ error: "권한이 없습니다." });
       }
 
-      await DiaryEntryModel.deleteOne({ id: Number(id) });
+      await DiaryEntryModel.deleteOne({ entryId: Number(id) });
       res.json({ message: "일기가 삭제되었습니다." });
     } catch (error) {
       console.error("Error deleting diary:", error);

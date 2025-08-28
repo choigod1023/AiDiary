@@ -50,7 +50,7 @@ router.get("/:id/comments", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const token = String(req.query.token || "");
-    const entry = await DiaryEntryModel.findOne({ id: Number(id) });
+    const entry = await DiaryEntryModel.findOne({ entryId: Number(id) });
     if (!entry) return res.status(404).json({ error: "Not found" });
 
     if (
@@ -139,7 +139,7 @@ router.post("/:id/comments", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Content is required" });
     }
 
-    const entry = await DiaryEntryModel.findOne({ id: Number(id) });
+    const entry = await DiaryEntryModel.findOne({ entryId: Number(id) });
     if (!entry) return res.status(404).json({ error: "Not found" });
 
     if (

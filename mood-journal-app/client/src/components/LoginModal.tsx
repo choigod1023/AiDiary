@@ -76,7 +76,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         <div className="space-y-4">
           <div className="relative">
             <GoogleLogin
-              onSuccess={(credentialResponse) => {
+              onSuccess={(credentialResponse: { credential?: string }) => {
                 console.log("Google 로그인 성공:", credentialResponse);
                 handleGoogleCredentialResponse({
                   credential: credentialResponse.credential!,
@@ -96,8 +96,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               width="100%"
             />
             {isGoogleLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
-                <div className="text-blue-600 font-medium">로그인 중...</div>
+              <div className="flex absolute inset-0 justify-center items-center bg-white bg-opacity-75 rounded-lg">
+                <div className="font-medium text-blue-600">로그인 중...</div>
               </div>
             )}
           </div>
