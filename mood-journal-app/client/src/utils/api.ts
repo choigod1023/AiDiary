@@ -13,19 +13,20 @@ export const api = ky.create({
 });
 
 import { DiaryEntry } from "../types/diary";
+import { User } from "../types/auth";
 
 // 인증 API
 export const authApi = {
   // Google OAuth 로그인
   googleLogin: (
     credential: string
-  ): Promise<{ success: boolean; token: string; user: any }> =>
+  ): Promise<{ success: boolean; token: string; user: User }> =>
     api.post("api/auth/google", { json: { credential } }).json(),
 
   // Naver OAuth 로그인
   naverLogin: (
     accessToken: string
-  ): Promise<{ success: boolean; token: string; user: any }> =>
+  ): Promise<{ success: boolean; token: string; user: User }> =>
     api.post("api/auth/naver", { json: { accessToken } }).json(),
 
   // 토큰 검증
@@ -36,7 +37,7 @@ export const authApi = {
   logout: (): Promise<void> => api.post("api/auth/logout").json(),
 
   // 사용자 정보 조회
-  getProfile: (): Promise<any> => api.get("api/auth/profile").json(),
+  getProfile: (): Promise<User> => api.get("api/auth/profile").json(),
 };
 
 // API 함수들
@@ -80,7 +81,17 @@ export const diaryApi = {
       .json(),
 
   // 댓글 목록 조회
-  getComments: (id: string, token: string): Promise<{ comments: any[] }> =>
+  getComments: (
+    id: string,
+    token: string
+  ): Promise<{
+    comments: {
+      id: string;
+      authorName?: string;
+      content: string;
+      createdAt: string;
+    }[];
+  }> =>
     api
       .get(`api/diary/${id}/comments`, {
         searchParams: { token },
@@ -92,7 +103,14 @@ export const diaryApi = {
     id: string,
     token: string,
     data: { content: string; authorName?: string }
-  ): Promise<{ comment: any }> =>
+  ): Promise<{
+    comment: {
+      id: string;
+      authorName?: string;
+      content: string;
+      createdAt: string;
+    };
+  }> =>
     api
       .post(`api/diary/${id}/comments`, {
         searchParams: { token },

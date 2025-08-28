@@ -1,4 +1,5 @@
-const CACHE_NAME = 'mood-journal-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
     '/write',
@@ -10,6 +11,7 @@ const urlsToCache = [
 
 // Service Worker 설치
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -31,12 +33,16 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
 // 네트워크 요청 가로채기 (오프라인 지원)
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/@vite/') || url.pathname.startsWith('/__vite_ping')) {
+        return;
+    }
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
@@ -65,6 +71,12 @@ self.addEventListener('fetch', (event) => {
                 );
             })
     );
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 // 푸시 알림 수신

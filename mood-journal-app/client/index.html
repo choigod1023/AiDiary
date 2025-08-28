@@ -11,6 +11,38 @@
 <body>
   <div id="root" style="padding: 0; margin: 0;"></div>
   <script type="module" src="src/main.tsx"></script>
+  <script>
+    // Only register SW in production/HTTPS; auto-handle updates
+    if ('serviceWorker' in navigator) {
+      const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (!isLocalhost && location.protocol === 'https:') {
+        window.addEventListener('load', async () => {
+          try {
+            const reg = await navigator.serviceWorker.register('/sw.js');
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+              window.location.reload();
+            }
+            reg.addEventListener('updatefound', () => {
+              const sw = reg.installing;
+              if (!sw) return;
+              sw.addEventListener('statechange', () => {
+                if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                  sw.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                }
+              });
+            });
+          } catch (e) {
+            console.warn('SW registration failed', e);
+          }
+        });
+      } else {
+        // In dev/localhost, ensure no stale SW
+        navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+      }
+    }
+  </script>
 </body>
 
 </html>
