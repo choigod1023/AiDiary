@@ -60,6 +60,10 @@ export const diaryApi = {
           emotion: e.emotion,
           entry: e.entry,
           aiFeedback: e.aiFeedback,
+          visibility: e.visibility,
+          shareToken: e.shareToken,
+          userId: e.userId,
+          authorName: e.authorName,
         }))
       ),
 
@@ -75,6 +79,10 @@ export const diaryApi = {
         emotion: e.emotion,
         entry: e.entry,
         aiFeedback: e.aiFeedback,
+        visibility: e.visibility,
+        shareToken: e.shareToken,
+        userId: e.userId,
+        authorName: e.authorName,
       })),
 
   // 일기 저장
@@ -83,6 +91,7 @@ export const diaryApi = {
     visibility?: "private" | "shared";
     title?: string;
     useAITitle?: boolean;
+    authorName?: string;
   }): Promise<{ message: string; entry: DiaryEntry }> =>
     api
       .post("api/diary", { json: payload })
@@ -96,6 +105,10 @@ export const diaryApi = {
           emotion: r.entry?.emotion,
           entry: r.entry?.entry,
           aiFeedback: r.entry?.aiFeedback,
+          visibility: r.entry?.visibility,
+          shareToken: r.entry?.shareToken,
+          userId: r.entry?.userId,
+          authorName: r.entry?.authorName,
         },
       })),
 
