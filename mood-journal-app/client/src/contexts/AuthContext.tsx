@@ -80,8 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         credentials.provider === "google"
           ? await authApi.googleLogin(credentials.accessToken)
           : await authApi.naverLogin(credentials.accessToken);
-      if (response.success) {
-        const user = await authApi.getProfile();
+      if (response.success && response.user) {
+        const user = response.user;
         try {
           localStorage.setItem("user_name", user.name || "");
           if (user.avatar) localStorage.setItem("user_avatar", user.avatar);
