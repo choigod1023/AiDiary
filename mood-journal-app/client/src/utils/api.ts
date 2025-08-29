@@ -6,41 +6,26 @@ export const api = ky.create({
   prefixUrl: API_BASE_URL,
   credentials: "include",
   timeout: 30000,
-  retry: {
-    limit: 2,
-    methods: ["get", "post", "put", "delete"],
-  },
-  hooks: {
-    beforeRequest: [
-      (request) => {
-        try {
-          const token = localStorage.getItem("auth_token");
-          if (token) {
-            request.headers.set("Authorization", `Bearer ${token}`);
-          }
-        } catch {
-          // ignore storage access errors
-        }
-      },
-    ],
-  },
+  retry: { limit: 2, methods: ["get", "post", "put", "delete"] },
 });
 
 import { DiaryEntry } from "../types/diary";
 import { User } from "../types/auth";
+
+type ServerDiaryEntry = DiaryEntry & { entryId?: number };
 
 // 인증 API
 export const authApi = {
   // Google OAuth 로그인
   googleLogin: (
     credential: string
-  ): Promise<{ success: boolean; token: string; user: User }> =>
+  ): Promise<{ success: boolean; user: User }> =>
     api.post("api/auth/google", { json: { accessToken: credential } }).json(),
 
   // Naver OAuth 로그인
   naverLogin: (
     accessToken: string
-  ): Promise<{ success: boolean; token: string; user: User }> =>
+  ): Promise<{ success: boolean; user: User }> =>
     api.post("api/auth/naver", { json: { accessToken } }).json(),
 
   // 토큰 검증
@@ -48,7 +33,8 @@ export const authApi = {
     api.get("api/auth/verify").json(),
 
   // 로그아웃
-  logout: (): Promise<void> => api.post("api/auth/logout").json(),
+  logout: (): Promise<{ success: boolean }> =>
+    api.post("api/auth/logout").json(),
 
   // 사용자 정보 조회
   getProfile: (): Promise<User> => api.get("api/auth/profile").json(),
@@ -57,15 +43,61 @@ export const authApi = {
 // API 함수들
 export const diaryApi = {
   // 일기 목록 조회
-  getList: (): Promise<DiaryEntry[]> => api.get("api/diary").json(),
+  getList: (): Promise<DiaryEntry[]> =>
+    api
+      .get("api/diary")
+      .json<{
+        entries: ServerDiaryEntry[];
+        total: number;
+        page: number;
+        totalPages: number;
+      }>()
+      .then((r) =>
+        r.entries.map((e: ServerDiaryEntry) => ({
+          id: e.entryId ?? e.id,
+          title: e.title,
+          date: e.date,
+          emotion: e.emotion,
+          entry: e.entry,
+          aiFeedback: e.aiFeedback,
+        }))
+      ),
 
   // 특정 일기 조회
   getById: (id: string): Promise<DiaryEntry> =>
-    api.get(`api/diary/${id}`).json(),
+    api
+      .get(`api/diary/${id}`)
+      .json<ServerDiaryEntry>()
+      .then((e) => ({
+        id: e.entryId ?? e.id,
+        title: e.title,
+        date: e.date,
+        emotion: e.emotion,
+        entry: e.entry,
+        aiFeedback: e.aiFeedback,
+      })),
 
   // 일기 저장
-  create: (entry: string): Promise<{ message: string }> =>
-    api.post("api/diary", { json: { entry } }).json(),
+  create: (payload: {
+    entry: string;
+    visibility?: "private" | "shared";
+    title?: string;
+    useAITitle?: boolean;
+  }): Promise<{ message: string; entry: DiaryEntry }> =>
+    api
+      .post("api/diary", { json: payload })
+      .json<{ message: string; entry: ServerDiaryEntry }>()
+      .then((r) => ({
+        message: r.message,
+        entry: {
+          id: r.entry?.entryId ?? r.entry?.id,
+          title: r.entry?.title,
+          date: r.entry?.date,
+          emotion: r.entry?.emotion,
+          entry: r.entry?.entry,
+          aiFeedback: r.entry?.aiFeedback,
+        },
+      })),
 
   // 일기 삭제
   delete: (id: string): Promise<void> => api.delete(`api/diary/${id}`).json(),
@@ -93,6 +125,18 @@ export const diaryApi = {
         searchParams: limit ? { limit: limit.toString() } : {},
       })
       .json(),
+
+  // 일기 수정
+  update: (
+    id: string,
+    payload: {
+      title?: string;
+      entry: string;
+      useAITitle?: boolean;
+      visibility?: "private" | "shared";
+    }
+  ): Promise<{ message?: string }> =>
+    api.put(`api/diary/${id}`, { json: payload }).json(),
 
   // 댓글 목록 조회
   getComments: (

@@ -101,7 +101,10 @@ const ListPage: React.FC = () => {
                 key={entry.id}
                 className="p-4 bg-amber-200 rounded-lg border border-amber-800 transition-colors hover:bg-amber-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600"
               >
-                <Link to={`/detail/${entry.id}`} className="block text-black">
+                <Link
+                  to={`/detail/${entry.id}`}
+                  className="block text-black dark:text-white"
+                >
                   <strong>{entry.date}</strong>: {entry.emotion} - {entry.title}
                 </Link>
               </li>

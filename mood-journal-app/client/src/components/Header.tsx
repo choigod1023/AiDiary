@@ -47,7 +47,19 @@ const Header: React.FC = () => {
             {authState.isAuthenticated ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  안녕하세요, {authState.user?.name}님! 👋
+                  안녕하세요,{" "}
+                  {authState.user?.name ||
+                    localStorage.getItem("user_name") ||
+                    ((): string | null => {
+                      const raw = document.cookie
+                        .split(";")
+                        .map((c) => c.trim())
+                        .find((c) => c.startsWith("display_name="))
+                        ?.split("=")[1];
+                      return raw ? decodeURIComponent(raw) : null;
+                    })() ||
+                    "사용자"}
+                  님! 👋
                 </span>
                 <button
                   onClick={handleLogout}

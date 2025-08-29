@@ -153,18 +153,33 @@ router.post("/google", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-        provider: user.provider,
-      },
-      token,
-      message: "Google 로그인 성공",
-    });
+    const isProd = process.env.NODE_ENV === "production";
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("display_name", encodeURIComponent(user.name || ""), {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          provider: user.provider,
+        },
+        message: "Google 로그인 성공",
+      });
   } catch (error) {
     console.error("Google login error:", error);
     res.status(500).json({
@@ -249,18 +264,33 @@ router.post("/naver", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-        provider: user.provider,
-      },
-      token,
-      message: "네이버 로그인 성공",
-    });
+    const isProd = process.env.NODE_ENV === "production";
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("display_name", encodeURIComponent(user.name || ""), {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          provider: user.provider,
+        },
+        message: "네이버 로그인 성공",
+      });
   } catch (error) {
     console.error("네이버 login error:", error);
     res.status(500).json({
@@ -372,5 +402,24 @@ router.get(
     }
   }
 );
+
+// 로그아웃: 쿠키 삭제
+router.post("/logout", (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+  res
+    .clearCookie("token", {
+      httpOnly: true,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+    })
+    .clearCookie("display_name", {
+      httpOnly: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+    })
+    .json({ success: true });
+});
 
 export default router;

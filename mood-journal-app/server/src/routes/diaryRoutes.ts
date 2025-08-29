@@ -93,6 +93,7 @@ router.post(
         emotion: emotionEmoji, // 변환된 이모지
         entry,
         userId, // 사용자 ID 추가
+        authorName: req.body.authorName || "익명", // 작성자 이름 추가
         visibility, // 공개 설정
       };
 
@@ -268,7 +269,7 @@ router.get("/:id", async (req: Request, res: Response) => {
         .json({ error: "유효하지 않은 ID 형식입니다. 숫자 ID가 필요합니다." });
     }
 
-    const entry = await DiaryEntryModel.findOne({ entryId: numericId });
+    const entry = await DiaryEntryModel.findOne({ id: numericId });
 
     if (!entry) {
       return res.status(404).json({ error: "Diary entry not found" });
@@ -357,9 +358,19 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = (req as any).user.id;
-    const { title, entry, useAITitle = false } = req.body;
+    const {
+      title,
+      entry,
+      useAITitle = false,
+      visibility,
+    } = req.body as {
+      title?: string;
+      entry?: string;
+      useAITitle?: boolean;
+      visibility?: "private" | "shared";
+    };
 
-    const diaryEntry = await DiaryEntryModel.findOne({ entryId: Number(id) });
+    const diaryEntry = await DiaryEntryModel.findOne({ id: Number(id) });
     if (!diaryEntry) {
       return res.status(404).json({ error: "일기를 찾을 수 없습니다." });
     }
@@ -368,24 +379,27 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
       return res.status(403).json({ error: "권한이 없습니다." });
     }
 
-    let finalTitle = title;
+    let finalTitle = title ?? diaryEntry.title;
     let finalEmotion = diaryEntry.emotion; // 감정은 기본적으로 기존 값 유지
 
     if (useAITitle) {
       // AI가 제목과 감정을 모두 재생성
       try {
-        finalTitle = await summarizeTitle(entry);
-        finalEmotion = await convertEmotionToEmoji(entry);
+        const src = entry ?? diaryEntry.entry;
+        finalTitle = await summarizeTitle(src);
+        finalEmotion = await convertEmotionToEmoji(src);
       } catch (error) {
         console.error("AI 제목/감정 생성 실패:", error);
         // AI 실패 시 기존 값 유지
-        finalTitle = title || diaryEntry.title;
+        finalTitle = title ?? diaryEntry.title;
         finalEmotion = diaryEntry.emotion;
       }
     } else {
       // AI 사용하지 않는 경우: 제목은 사용자 입력, 감정만 AI 재생성
       try {
-        finalEmotion = await convertEmotionToEmoji(entry);
+        if (entry) {
+          finalEmotion = await convertEmotionToEmoji(entry);
+        }
       } catch (error) {
         console.error("AI 감정 분석 실패:", error);
         // AI 실패 시 기존 감정 유지
@@ -393,16 +407,26 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
       }
     }
 
+    const updateDoc: any = {
+      title: finalTitle,
+      emotion: finalEmotion,
+      aiFeedback: diaryEntry.aiFeedback,
+      aiFeedbackAt: diaryEntry.aiFeedbackAt,
+    };
+    if (typeof entry === "string") updateDoc.entry = entry;
+    if (visibility === "shared") {
+      updateDoc.visibility = "shared";
+      if (!diaryEntry.shareToken) {
+        updateDoc.shareToken = generateShareToken();
+      }
+    } else if (visibility === "private") {
+      updateDoc.visibility = "private";
+      updateDoc.shareToken = undefined;
+    }
+
     const updatedEntry = await DiaryEntryModel.findOneAndUpdate(
-      { entryId: Number(id) },
-      {
-        title: finalTitle,
-        entry,
-        emotion: finalEmotion,
-        // aiFeedback 필드 보존 - 공개/비공개 전환 시에도 유지
-        aiFeedback: diaryEntry.aiFeedback,
-        aiFeedbackAt: diaryEntry.aiFeedbackAt,
-      },
+      { id: Number(id) },
+      updateDoc,
       { new: true }
     );
 
@@ -458,7 +482,7 @@ router.delete(
       const { id } = req.params;
       const userId = (req as any).user.id;
 
-      const entry = await DiaryEntryModel.findOne({ entryId: Number(id) });
+      const entry = await DiaryEntryModel.findOne({ id: Number(id) });
       if (!entry) {
         return res.status(404).json({ error: "일기를 찾을 수 없습니다." });
       }
@@ -467,7 +491,7 @@ router.delete(
         return res.status(403).json({ error: "권한이 없습니다." });
       }
 
-      await DiaryEntryModel.deleteOne({ entryId: Number(id) });
+      await DiaryEntryModel.deleteOne({ id: Number(id) });
       res.json({ message: "일기가 삭제되었습니다." });
     } catch (error) {
       console.error("Error deleting diary:", error);

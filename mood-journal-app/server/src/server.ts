@@ -1,6 +1,7 @@
 import express, { Request, RequestHandler, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { DiaryEntryModel } from "../models/DiaryEntry";
 import {
   summarizeTitle,
@@ -70,6 +71,7 @@ const corsOptions = {
 
 // CORS 미들웨어 적용
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 // OPTIONS 요청 처리
 app.options("*", cors(corsOptions));
@@ -91,7 +93,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 // API 라우트들 마운트
 app.use("/api/auth", authRoutes);
 app.use("/api/diary", diaryRoutes);
-app.use("/api/comments", commentRoutes);
+app.use("/api/diary", commentRoutes);
 app.use("/api/emotions", emotionRoutes);
 app.use("/api/ai-feedback", aiFeedbackRoutes);
 app.use("/api/share", shareRoutes);

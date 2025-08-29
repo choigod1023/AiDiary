@@ -17,14 +17,17 @@ interface DiaryEditorProps {
     title: string;
     entry: string;
     useAITitle: boolean;
+    visibility?: "private" | "shared";
   };
   onEditDataChange: (data: {
     title: string;
     entry: string;
     useAITitle: boolean;
+    visibility?: "private" | "shared";
   }) => void;
   onSave: () => void;
   onCancel: () => void;
+  isSaving?: boolean;
 }
 
 const DiaryEditor: React.FC<DiaryEditorProps> = ({
@@ -33,6 +36,7 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
   onEditDataChange,
   onSave,
   onCancel,
+  isSaving = false,
 }) => {
   return (
     <>
@@ -44,9 +48,9 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
             onEditDataChange({ ...editData, title: e.target.value })
           }
           disabled={editData.useAITitle} // AI 제목 생성 체크 시 비활성화
-          className={`w-full p-3 text-2xl font-bold rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none ${
+          className={`w-full p-3 text-2xl font-bold rounded-lg bg-amber-50 border-2 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none ${
             editData.useAITitle
-              ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500"
+              ? "bg-amber-100 text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500"
               : "bg-white border-amber-600 dark:bg-gray-700 dark:text-white dark:border-gray-600"
           }`}
           placeholder={
@@ -71,7 +75,7 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
           📅 {entry.date}
         </div>
         <div className="flex flex-col items-end space-y-1">
-          <div className="text-sm text-amber-700 dark:text-amber-300 font-medium">
+          <div className="text-sm font-medium text-amber-700 dark:text-amber-300">
             오늘의 내 기분
           </div>
           <div className="text-2xl">{entry.emotion}</div>
@@ -95,6 +99,36 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
         </label>
       </div>
 
+      {/* 공개 범위 토글 */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            공개 범위
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              onEditDataChange({
+                ...editData,
+                visibility:
+                  (editData.visibility ?? entry.visibility) === "private"
+                    ? "shared"
+                    : "private",
+              })
+            }
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              (editData.visibility ?? entry.visibility) === "private"
+                ? "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+                : "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            }`}
+          >
+            {(editData.visibility ?? entry.visibility) === "private"
+              ? "🔒 비공개"
+              : "🌍 공개"}
+          </button>
+        </div>
+      </div>
+
       {/* 일기 내용 */}
       <div className="mb-6">
         <textarea
@@ -103,22 +137,31 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
             onEditDataChange({ ...editData, entry: e.target.value })
           }
           rows={10}
-          className="p-4 w-full text-lg bg-white rounded-lg border-2 border-amber-600 resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          className="p-4 w-full text-lg bg-amber-50 rounded-lg border-2 border-amber-600 resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
           placeholder="일기 내용을 입력하세요"
         />
       </div>
 
-      {/* 수정 모드 버튼들 */}
-      <div className="flex justify-end space-x-3 mb-6">
+      {/* 액션 버튼들 */}
+      <div className="flex justify-end mb-6 space-x-3">
         <button
-          onClick={onSave}
-          className="px-6 py-3 text-white bg-green-600 rounded-lg transition-colors hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+          onClick={() => {
+            if (isSaving) return;
+            if (!editData.entry.trim()) return;
+            onSave();
+          }}
+          disabled={isSaving}
+          className={`px-6 py-3 text-white rounded-lg transition-colors ${
+            isSaving
+              ? "bg-gray-400 cursor-not-allowed dark:bg-gray-500"
+              : "bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+          }`}
         >
-          💾 저장
+          {isSaving ? "⏳ 저장 중..." : "💾 저장"}
         </button>
         <button
           onClick={onCancel}
-          className="px-6 py-3 text-white bg-gray-600 rounded-lg transition-colors hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700"
+          className="px-6 py-3 text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
         >
           ❌ 취소
         </button>

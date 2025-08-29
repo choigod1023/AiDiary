@@ -20,8 +20,10 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ) => {
+  const cookieToken = (req as any).cookies?.token;
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const headerToken = authHeader && authHeader.split(" ")[1];
+  const token = cookieToken || headerToken;
 
   if (!token) {
     return res.status(401).json({
@@ -53,8 +55,9 @@ export const optionalAuth = (
   res: Response,
   next: NextFunction
 ) => {
+  const cookieToken = (req as any).cookies?.token;
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const token = cookieToken || (authHeader && authHeader.split(" ")[1]);
 
   if (!token) {
     return next(); // 토큰이 없어도 통과

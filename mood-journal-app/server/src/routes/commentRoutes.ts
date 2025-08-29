@@ -50,21 +50,21 @@ router.get("/:id/comments", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const token = String(req.query.token || "");
-    const entry = await DiaryEntryModel.findOne({ entryId: Number(id) });
+    const entry = await DiaryEntryModel.findOne({ id: Number(id) });
     if (!entry) return res.status(404).json({ error: "Not found" });
 
-    if (
-      entry.visibility !== "shared" ||
-      !entry.shareToken ||
-      token !== entry.shareToken
-    ) {
+    // 공개된 글만 댓글 조회 가능
+    if (entry.visibility !== "shared") {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    const comments = await CommentModel.find({
-      entryId: Number(id),
-      shareToken: token,
-    })
+    // 토큰이 있으면 해당 토큰의 댓글만, 없으면 모든 댓글
+    const query: any = { entryId: Number(id) };
+    if (token) {
+      query.shareToken = token;
+    }
+
+    const comments = await CommentModel.find(query)
       .sort({ createdAt: -1 })
       .lean();
     res.json({ comments });
@@ -139,21 +139,18 @@ router.post("/:id/comments", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Content is required" });
     }
 
-    const entry = await DiaryEntryModel.findOne({ entryId: Number(id) });
+    const entry = await DiaryEntryModel.findOne({ id: Number(id) });
     if (!entry) return res.status(404).json({ error: "Not found" });
 
-    if (
-      entry.visibility !== "shared" ||
-      !entry.shareToken ||
-      token !== entry.shareToken
-    ) {
+    // 공개된 글만 댓글 작성 가능
+    if (entry.visibility !== "shared") {
       return res.status(403).json({ error: "Forbidden" });
     }
 
     const comment = new CommentModel({
-      id: Date.now(),
+      commentId: Date.now() + Math.floor(Math.random() * 1000), // 타임스탬프 + 랜덤값으로 고유성 보장
       entryId: Number(id),
-      shareToken: token,
+      shareToken: token || undefined, // 토큰이 없으면 undefined
       authorName,
       content: content.trim(),
     });

@@ -79,7 +79,12 @@ export class DualStorageManager {
     entry: SyncableEntry
   ): Promise<{ success: boolean; error?: unknown }> {
     try {
-      await diaryApi.create(entry.entry);
+      await diaryApi.create({
+        entry: entry.entry,
+        title: entry.title,
+        visibility: entry.userId ? "private" : "private",
+        useAITitle: !entry.title,
+      });
       return { success: true };
     } catch (error) {
       console.error("Server save failed:", error);

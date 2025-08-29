@@ -177,8 +177,8 @@ const ServerComments: React.FC<{ entryId: string; shareToken?: string }> = ({
   if (!shareToken) return null;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:space-x-2">
+    <div className="mx-auto space-y-3 max-w-xl">
+      <div className="flex flex-col gap-3 justify-center items-center sm:flex-row sm:space-x-2">
         <input
           value={authorName}
           onChange={(e) => setAuthorName(e.target.value)}
@@ -217,29 +217,22 @@ const ServerComments: React.FC<{ entryId: string; shareToken?: string }> = ({
               첫 댓글을 남겨보세요
             </li>
           )}
-          {data?.comments.map(
-            (c: {
-              id: string;
-              authorName?: string;
-              content: string;
-              createdAt: string;
-            }) => (
-              <li
-                key={c.id}
-                className="p-2 bg-amber-50 rounded border border-amber-200 dark:bg-gray-800 dark:border-gray-700"
-              >
-                <div className="text-sm text-gray-700 dark:text-gray-200">
-                  {c.authorName ? (
-                    <strong className="mr-2">{c.authorName}</strong>
-                  ) : null}
-                  {c.content}
-                </div>
-                <div className="text-xs text-gray-400">
-                  {new Date(c.createdAt).toLocaleString()}
-                </div>
-              </li>
-            )
-          )}
+          {data?.comments.map((c) => (
+            <li
+              key={c.id}
+              className="p-2 bg-amber-50 rounded border border-amber-200 dark:bg-gray-800 dark:border-gray-700"
+            >
+              <div className="text-sm text-gray-700 dark:text-gray-200">
+                {c.authorName ? (
+                  <strong className="mr-2">{c.authorName}</strong>
+                ) : null}
+                {c.content}
+              </div>
+              <div className="text-xs text-gray-400">
+                {new Date(c.createdAt).toLocaleString()}
+              </div>
+            </li>
+          ))}
         </ul>
       )}
     </div>
@@ -278,7 +271,7 @@ const MobileToolbar: React.FC<{
       </div>
     </div>
     {/* 하단 안전 영역을 위한 패딩 */}
-    <div className="safe-area-bottom bg-white dark:bg-gray-800"></div>
+    <div className="bg-white safe-area-bottom dark:bg-gray-800"></div>
   </div>
 );
 

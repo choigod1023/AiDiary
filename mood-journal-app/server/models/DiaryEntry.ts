@@ -1,9 +1,11 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import type { HydratedDocument } from "mongoose";
 
 // 스키마 정의
 export interface IDiaryEntry {
-  entryId: number; // id 대신 entryId 사용
+  id: number; // 일기 고유 ID
   userId: string; // 사용자 ID 추가
+  authorName: string; // 작성자 이름 추가
   title: string;
   date: string;
   emotion: string;
@@ -19,13 +21,14 @@ export interface IDiaryEntry {
   updatedAt: Date;
 }
 
-// Document와 결합된 인터페이스
-export interface IDiaryEntryDocument extends IDiaryEntry, Document {}
+// Hydrated document type (avoids id type conflict with Document)
+export type IDiaryEntryDocument = HydratedDocument<IDiaryEntry>;
 
 const diarySchema = new Schema(
   {
-    entryId: { type: Number, required: true, unique: true }, // id 대신 entryId 사용
+    id: { type: Number, required: true, unique: true }, // 일기 고유 ID
     userId: { type: String, required: true, index: true }, // 사용자 ID
+    authorName: { type: String, required: true }, // 작성자 이름
     title: { type: String, required: true },
     date: { type: String, required: true },
     emotion: { type: String, required: true },
@@ -50,7 +53,7 @@ const diarySchema = new Schema(
 );
 
 // 모델 생성
-export const DiaryEntryModel = mongoose.model<IDiaryEntryDocument>(
+export const DiaryEntryModel = mongoose.model<IDiaryEntry>(
   "DiaryEntry",
   diarySchema
 );

@@ -1,18 +1,23 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { diaryApi } from "../utils/api";
 import DiaryDetail from "../components/DiaryDetail";
 import { DiaryEntry } from "../types/diary";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useAuth } from "../contexts/AuthContext";
 
 const DetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const queryClient = useQueryClient();
+  const token = new URLSearchParams(search).get("token");
+  const isOwnerView = !token;
   const [showAIFeedback, setShowAIFeedback] = useState<boolean>(false);
   const [aiFeedback, setAIFeedback] = useState<string>("");
   const [aiLoading, setAILoading] = useState<boolean>(false);
+  const { authState } = useAuth();
 
   // React Query를 사용한 일기 조회
   const {
@@ -66,8 +71,32 @@ const DetailPage: React.FC = () => {
     },
   });
 
+  // 일기 수정 mutation
+  const updateMutation = useMutation({
+    mutationFn: (p: {
+      id: string;
+      title?: string;
+      entry: string;
+      useAITitle?: boolean;
+      visibility?: "private" | "shared";
+    }) =>
+      diaryApi.update(p.id, {
+        title: p.title,
+        entry: p.entry,
+        useAITitle: p.useAITitle,
+        visibility: p.visibility,
+      }),
+    onSuccess: () => {
+      alert("수정이 완료되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["diary", id] });
+      queryClient.invalidateQueries({ queryKey: ["diary-list"] });
+      navigate(`/detail/${id}`);
+    },
+    onError: () => alert("수정에 실패했습니다."),
+  });
+
   const handleBack = () => {
-    navigate(-1);
+    navigate("/list");
   };
 
   const handleDelete = async () => {
@@ -153,13 +182,38 @@ const DetailPage: React.FC = () => {
     <div className="flex flex-col justify-center items-center w-full min-h-screen text-gray-900 bg-amber-50 min-w-screen dark:bg-gray-900 dark:text-white">
       <div className="px-6 w-full max-w-6xl">
         <DiaryDetail
-          entry={entry}
+          entry={{
+            id: entry.id,
+            title: entry.title,
+            date: entry.date,
+            emotion: entry.emotion,
+            entry: entry.entry,
+            aiFeedback: entry.aiFeedback,
+            visibility:
+              ("visibility" in entry && entry.visibility) || "private",
+            shareToken: "shareToken" in entry ? entry.shareToken : undefined,
+            userId: authState.user?.name || "익명",
+          }}
           handleBack={handleBack}
           handleDelete={handleDelete}
           showAIFeedback={showAIFeedback}
           aiFeedback={aiFeedback}
           aiLoading={aiLoading}
           onAIFeedbackRequest={handleAIFeedback}
+          isOwner={isOwnerView}
+          isSaving={updateMutation.isPending}
+          onEdit={(edited) =>
+            updateMutation.mutate({
+              id: String(entry.id),
+              title: edited.useAITitle ? undefined : edited.title,
+              entry: edited.entry,
+              useAITitle: edited.useAITitle,
+              visibility:
+                ("visibility" in edited && edited.visibility) ||
+                ("visibility" in entry && entry.visibility) ||
+                "private",
+            })
+          }
         />
       </div>
     </div>

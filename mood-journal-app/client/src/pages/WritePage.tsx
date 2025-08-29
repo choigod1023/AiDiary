@@ -2,17 +2,35 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { diaryApi } from "../utils/api";
-import LoadingSpinner from "../components/LoadingSpinner";
+import DiaryEditor from "../components/DiaryEditor";
+import { useAuth } from "../contexts/AuthContext";
 
 const WritePage: React.FC = () => {
-  const [entry, setEntry] = useState<string>("");
+  const [editData, setEditData] = useState<{
+    title: string;
+    entry: string;
+    useAITitle: boolean;
+    visibility?: "private" | "shared";
+  }>({ title: "", entry: "", useAITitle: false, visibility: "private" });
   const navigate = useNavigate();
+  const { authState } = useAuth();
 
   // 일기 저장 mutation
   const saveMutation = useMutation({
-    mutationFn: (entry: string) => diaryApi.create(entry),
+    mutationFn: (payload: {
+      entry: string;
+      visibility?: "private" | "shared";
+      title?: string;
+      useAITitle?: boolean;
+      authorName?: string;
+    }) => diaryApi.create(payload),
     onSuccess: () => {
-      setEntry("");
+      setEditData({
+        title: "",
+        entry: "",
+        useAITitle: false,
+        visibility: "private",
+      });
       alert("일기가 저장되었습니다!");
       navigate("/list");
     },
@@ -23,17 +41,23 @@ const WritePage: React.FC = () => {
   });
 
   const handleSave = async () => {
-    if (!entry.trim()) {
+    if (!editData.entry.trim()) {
       alert("일기 내용을 입력해주세요.");
       return;
     }
 
-    saveMutation.mutate(entry);
+    saveMutation.mutate({
+      entry: editData.entry,
+      visibility: editData.visibility,
+      title: editData.title,
+      useAITitle: !editData.title,
+      authorName: authState.user?.name || "익명",
+    });
   };
 
   return (
-    <div className="flex flex-1 justify-center items-center p-8 w-full bg-amber-50">
-      <div className="max-w-8xl w-[70vw] mx-auto rounded-lg shadow-lg p-8 bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
+    <div className="flex flex-1 justify-center items-center p-8 w-full bg-amber-50 h-min-screen dark:bg-gray-900">
+      <div className="max-w-8xl w-[70vw] mx-auto rounded-2xl p-8 border-2 border-amber-800 shadow-md  bg-amber-200 text-gray-900 dark:bg-gray-800 dark:text-white">
         <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => navigate(-1)}
@@ -44,31 +68,22 @@ const WritePage: React.FC = () => {
           <h1 className="text-4xl font-bold text-center">일기 작성</h1>
           <div className="w-[100px]"></div>
         </div>
-        <textarea
-          className="p-6 w-full h-80 font-sans text-gray-900 bg-amber-50 rounded-lg border-2 border-amber-300 resize-none focus:outline-none focus:border-amber-400 dark:bg-gray-900 dark:text-white dark:border-gray-600 dark:focus:border-blue-500"
-          placeholder="여기에 일기를 작성하세요..."
-          value={entry}
-          onChange={(e) => setEntry(e.target.value)}
-          disabled={saveMutation.isPending}
-        ></textarea>
-        <button
-          className={`py-4 mt-8 w-full font-sans font-semibold text-white rounded-lg transition-colors ${
-            saveMutation.isPending
-              ? "bg-gray-400 cursor-not-allowed dark:bg-gray-500"
-              : "bg-yellow-600 hover:bg-yellow-700 dark:bg-blue-600 dark:hover:bg-blue-700"
-          }`}
-          onClick={handleSave}
-          disabled={saveMutation.isPending}
-        >
-          {saveMutation.isPending ? (
-            <div className="flex justify-center items-center">
-              <LoadingSpinner size="sm" color="white" />
-              <span className="ml-2">저장 중...</span>
-            </div>
-          ) : (
-            "일기 저장"
-          )}
-        </button>
+        <DiaryEditor
+          entry={{
+            id: "new",
+            title: editData.title,
+            date: new Date().toISOString().slice(0, 16).replace("T", " "),
+            emotion: "🙂",
+            entry: editData.entry,
+            visibility: editData.visibility ?? "private",
+            userId: "me",
+          }}
+          editData={editData}
+          onEditDataChange={setEditData}
+          onSave={handleSave}
+          onCancel={() => navigate(-1)}
+          isSaving={saveMutation.isPending}
+        />
       </div>
     </div>
   );

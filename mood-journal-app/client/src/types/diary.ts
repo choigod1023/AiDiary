@@ -5,4 +5,8 @@ export interface DiaryEntry {
   emotion: string;
   entry: string;
   aiFeedback?: string;
+  visibility?: "private" | "shared";
+  shareToken?: string;
+  userId?: string;
+  authorName?: string;
 }
