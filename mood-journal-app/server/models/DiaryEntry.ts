@@ -5,7 +5,7 @@ import type { HydratedDocument } from "mongoose";
 export interface IDiaryEntry {
   id: number; // 일기 고유 ID
   userId: string; // 사용자 ID 추가
-  authorName: string; // 작성자 이름 추가
+  authorName?: string; // 작성자 이름 (옵션)
   title: string;
   date: string;
   emotion: string;
@@ -28,7 +28,7 @@ const diarySchema = new Schema(
   {
     id: { type: Number, required: true, unique: true }, // 일기 고유 ID
     userId: { type: String, required: true, index: true }, // 사용자 ID
-    authorName: { type: String, required: true }, // 작성자 이름
+    authorName: { type: String, default: "" }, // 작성자 이름 (기존 문서 호환)
     title: { type: String, required: true },
     date: { type: String, required: true },
     emotion: { type: String, required: true },
