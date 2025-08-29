@@ -118,7 +118,7 @@ app.use("/api/emotions", emotionRoutes);
 app.use("/api/ai-feedback", aiFeedbackRoutes);
 app.use("/api/share", shareRoutes);
 
-// (moved) GET /api/diary/:id is defined after static routes to avoid conflicts
+// (removed) Inline public Diary CRUD endpoints to enforce auth via diaryRoutes
 
 // 일기 저장 API
 app.post("/api/diary", async (req: Request, res: Response) => {
