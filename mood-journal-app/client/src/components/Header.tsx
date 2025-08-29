@@ -22,11 +22,9 @@ const Header: React.FC = () => {
 
   const safeDecode = (value: string | null): string | null => {
     if (!value) return null;
-    // 쿠키 값에 공백이 '+'로 들어오는 경우 처리
     const replaced = value.replace(/\+/g, " ");
     try {
       const once = decodeURIComponent(replaced);
-      // 이미 디코딩된 문자열에 또 %가 남아있으면 한 번 더 시도
       if (/%[0-9A-Fa-f]{2}/.test(once)) {
         try {
           return decodeURIComponent(once);
@@ -52,8 +50,8 @@ const Header: React.FC = () => {
 
   const storedName = safeDecode(localStorage.getItem("user_name"));
 
-  const displayName =
-    authState.user?.name || storedName || cookieName || "사용자";
+  const displayName = authState.user?.name || storedName || cookieName || "";
+  const nameReady = Boolean(displayName.trim());
 
   return (
     <>
@@ -72,7 +70,7 @@ const Header: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {authState.isAuthenticated ? (
+            {authState.isAuthenticated && nameReady ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   안녕하세요, {displayName}님! 👋
