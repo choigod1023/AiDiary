@@ -2,6 +2,18 @@
   "version": 2,
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    {
+      "src": "/sw\\.js",
+      "dest": "/sw.js",
+      "headers": { "cache-control": "no-cache" }
+    },
+    { "src": "/workbox-.*\\.js", "dest": "/$1" },
+    { "src": "/manifest\\.webmanifest", "dest": "/manifest.webmanifest" },
+    {
+      "src": "/(.*\\.(js|css|svg|png|ico|jpg|jpeg|webp|woff|woff2))",
+      "dest": "/$1"
+    },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
