@@ -15,21 +15,50 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    // React Query 캐시 초기화
     queryClient.clear();
-
-    // 로그아웃 처리
     await logout();
-
-    // 홈으로 이동
     navigate("/");
   };
+
+  const safeDecode = (value: string | null): string | null => {
+    if (!value) return null;
+    // 쿠키 값에 공백이 '+'로 들어오는 경우 처리
+    const replaced = value.replace(/\+/g, " ");
+    try {
+      const once = decodeURIComponent(replaced);
+      // 이미 디코딩된 문자열에 또 %가 남아있으면 한 번 더 시도
+      if (/%[0-9A-Fa-f]{2}/.test(once)) {
+        try {
+          return decodeURIComponent(once);
+        } catch {
+          return once;
+        }
+      }
+      return once;
+    } catch {
+      return replaced;
+    }
+  };
+
+  const cookieName = (() => {
+    const rawCookie = document.cookie
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith("display_name="));
+    if (!rawCookie) return null;
+    const rawValue = rawCookie.slice("display_name=".length);
+    return safeDecode(rawValue);
+  })();
+
+  const storedName = safeDecode(localStorage.getItem("user_name"));
+
+  const displayName =
+    authState.user?.name || storedName || cookieName || "사용자";
 
   return (
     <>
       <header className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 backdrop-blur-sm bg-white/90 dark:bg-gray-800/90 dark:border-gray-700 mobile-safe-top">
         <div className="flex justify-between items-center px-6 py-3">
-          {/* 로고 및 프로젝트 이름 */}
           <div
             onClick={handleLogoClick}
             className="flex items-center space-x-2 transition-opacity cursor-pointer hover:opacity-80"
@@ -42,24 +71,11 @@ const Header: React.FC = () => {
             </span>
           </div>
 
-          {/* 인증 상태 및 로그인/로그아웃 */}
           <div className="flex items-center space-x-4">
             {authState.isAuthenticated ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  안녕하세요,{" "}
-                  {authState.user?.name ||
-                    localStorage.getItem("user_name") ||
-                    ((): string | null => {
-                      const raw = document.cookie
-                        .split(";")
-                        .map((c) => c.trim())
-                        .find((c) => c.startsWith("display_name="))
-                        ?.split("=")[1];
-                      return raw ? decodeURIComponent(raw) : null;
-                    })() ||
-                    "사용자"}
-                  님! 👋
+                  안녕하세요, {displayName}님! 👋
                 </span>
                 <button
                   onClick={handleLogout}
@@ -80,10 +96,8 @@ const Header: React.FC = () => {
         </div>
       </header>
 
-      {/* 헤더 높이 + 안전 영역만큼 상단 여백 추가 */}
       <div className="mobile-header-height"></div>
 
-      {/* 로그인 모달 */}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
