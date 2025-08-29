@@ -37,6 +37,26 @@ if (!process.env.MONGODB_URI) {
 
 const app = express();
 
+// Preflight/CORS headers (explicit) prior to cors() for reliability on Vercel/edge
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  const allowedOrigins = [
+    "https://ai-diary-eight-drab.vercel.app",
+    "http://localhost:5173",
+  ];
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Vary", "Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // CORS 설정
 const allowedOrigins = [
   "https://ai-diary-eight-drab.vercel.app",
