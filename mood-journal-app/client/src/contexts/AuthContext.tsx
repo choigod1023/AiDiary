@@ -35,10 +35,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const checkAuth = async () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
+      console.log("Checking auth...", { userAgent: navigator.userAgent });
+
       const verified = await authApi.verifyToken();
+      console.log("Auth verification result:", verified);
+
       if (verified.success) {
         // 쿠키 기반: 프로필 별도 조회 + 표시용 정보 캐시
         const user = await authApi.getProfile();
+        console.log("User profile loaded:", user);
+
         try {
           localStorage.setItem("user_name", user.name || "");
           if (user.avatar) localStorage.setItem("user_avatar", user.avatar);
@@ -52,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           isLoading: false,
         });
       } else {
+        console.log("Auth verification failed");
         setAuthState({
           user: null,
           token: null,
@@ -59,7 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           isLoading: false,
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Auth check error:", error);
       setAuthState({
         user: null,
         token: null,

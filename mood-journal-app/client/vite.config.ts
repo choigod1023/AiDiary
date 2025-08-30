@@ -37,6 +37,24 @@ export default defineConfig({
           {
             urlPattern: /^https:\/\/ai-diary-server\.vercel\.app\/api\//,
             handler: "NetworkOnly",
+            options: {
+              cacheName: "api-cache",
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/localhost:5000\/api\//,
+            handler: "NetworkOnly",
+            options: {
+              cacheName: "api-cache-dev",
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
           },
         ],
       },

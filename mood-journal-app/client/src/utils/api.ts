@@ -7,6 +7,44 @@ export const api = ky.create({
   credentials: "include",
   timeout: 30000,
   retry: { limit: 2, methods: ["get", "post", "put", "delete"] },
+  hooks: {
+    beforeRequest: [
+      (request) => {
+        // 모바일 환경 디버깅을 위한 로그
+        console.log("API Request:", {
+          url: request.url,
+          method: request.method,
+          headers: Object.fromEntries(request.headers.entries()),
+          userAgent: navigator.userAgent,
+        });
+      },
+    ],
+    afterResponse: [
+      (request, options, response) => {
+        // 응답 로그
+        console.log("API Response:", {
+          url: request.url,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
+        return response;
+      },
+    ],
+    beforeError: [
+      (error) => {
+        // 에러 로그
+        console.error("API Error:", {
+          url: error.request?.url,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          message: error.message,
+          userAgent: navigator.userAgent,
+        });
+        return error;
+      },
+    ],
+  },
 });
 
 import { DiaryEntry } from "../types/diary";

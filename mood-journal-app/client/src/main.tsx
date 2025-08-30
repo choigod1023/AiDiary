@@ -15,6 +15,7 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10분 (이전 cacheTime)
       retry: 2,
       refetchOnWindowFocus: false,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {
       retry: 1,
