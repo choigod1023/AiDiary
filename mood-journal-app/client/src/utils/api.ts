@@ -2,6 +2,16 @@ import ky from "ky";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+// 토큰을 가져오는 함수
+const getAuthToken = () => {
+  try {
+    return localStorage.getItem("auth_token");
+  } catch (error) {
+    console.warn("Failed to get token from localStorage:", error);
+    return null;
+  }
+};
+
 export const api = ky.create({
   prefixUrl: API_BASE_URL,
   credentials: "include",
@@ -10,6 +20,12 @@ export const api = ky.create({
   hooks: {
     beforeRequest: [
       (request) => {
+        // 토큰을 헤더에 추가
+        const token = getAuthToken();
+        if (token) {
+          request.headers.set("Authorization", `Bearer ${token}`);
+        }
+
         // 모바일 환경 디버깅을 위한 로그
         console.log("API Request:", {
           url: request.url,
@@ -57,13 +73,13 @@ export const authApi = {
   // Google OAuth 로그인
   googleLogin: (
     credential: string
-  ): Promise<{ success: boolean; user: User }> =>
+  ): Promise<{ success: boolean; user: User; token: string }> =>
     api.post("api/auth/google", { json: { accessToken: credential } }).json(),
 
   // Naver OAuth 로그인
   naverLogin: (
     accessToken: string
-  ): Promise<{ success: boolean; user: User }> =>
+  ): Promise<{ success: boolean; user: User; token: string }> =>
     api.post("api/auth/naver", { json: { accessToken } }).json(),
 
   // 토큰 검증

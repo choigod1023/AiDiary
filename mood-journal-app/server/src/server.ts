@@ -42,7 +42,11 @@ app.use((req, res, next) => {
   const origin = req.headers.origin as string | undefined;
   const allowedOrigins = [
     "https://ai-diary-eight-drab.vercel.app",
+    "https://choigod1023.p-e.kr",
+    "http://choigod1023.p-e.kr",
+    "http://choigod1023.p-e.kr:5173",
     "http://localhost:5173",
+    "http://localhost:3000",
   ];
   if (origin && allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
@@ -61,8 +65,12 @@ app.use((req, res, next) => {
 const allowedOrigins = [
   "https://ai-diary-eight-drab.vercel.app",
   "https://ai-diary-server.vercel.app",
-  "http://localhost:5173",
+  "https://choigod1023.p-e.kr",
+  "http://choigod1023.p-e.kr",
   "http://choigod1023.p-e.kr:5173",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:5000",
 ];
 
 const corsOptions = {

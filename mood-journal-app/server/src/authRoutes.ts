@@ -178,6 +178,7 @@ router.post("/google", async (req, res) => {
           avatar: user.avatar,
           provider: user.provider,
         },
+        token: token,
         message: "Google 로그인 성공",
       });
   } catch (error) {
@@ -289,6 +290,7 @@ router.post("/naver", async (req, res) => {
           avatar: user.avatar,
           provider: user.provider,
         },
+        token: token,
         message: "네이버 로그인 성공",
       });
   } catch (error) {

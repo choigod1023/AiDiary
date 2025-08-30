@@ -56,6 +56,17 @@ export default defineConfig({
               },
             },
           },
+          {
+            urlPattern: /^https:\/\/choigod1023\.p-e\.kr\/api\//,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache-custom",
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
         ],
       },
     }),
