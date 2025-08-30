@@ -36,7 +36,7 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/ai-diary-server\.vercel\.app\/api\//,
-            handler: "NetworkOnly",
+            handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
               networkTimeoutSeconds: 10,
@@ -47,7 +47,7 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/localhost:5000\/api\//,
-            handler: "NetworkOnly",
+            handler: "NetworkFirst",
             options: {
               cacheName: "api-cache-dev",
               networkTimeoutSeconds: 10,
@@ -61,6 +61,12 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ["mood-journal-app.vercel.app", "choigod1023.p-e.kr"],
+    allowedHosts: [
+      "mood-journal-app.vercel.app",
+      "choigod1023.p-e.kr",
+      "ai-diary-eight-drab.vercel.app",
+      "ai-diary-server.vercel.app",
+      "localhost:5173",
+    ],
   },
 });
