@@ -56,9 +56,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       };
 
+      // 안전한 localStorage 접근 함수
+      const safeGetItem = (key: string): string | null => {
+        try {
+          return localStorage.getItem(key);
+        } catch (error) {
+          console.warn(`Failed to get localStorage item ${key}:`, error);
+          return null;
+        }
+      };
+
+      const safeSetItem = (key: string, value: string): boolean => {
+        try {
+          localStorage.setItem(key, value);
+          return true;
+        } catch (error) {
+          console.warn(`Failed to set localStorage item ${key}:`, error);
+          return false;
+        }
+      };
+
       // 로컬 스토리지에서 토큰과 사용자 정보 확인
-      const token = localStorage.getItem("auth_token");
-      const rawStoredName = localStorage.getItem("user_name");
+      const token = safeGetItem("auth_token");
+      const rawStoredName = safeGetItem("user_name");
       const storedName = safeDecode(rawStoredName);
 
       console.log("Auth check - localStorage data:", {
@@ -67,6 +87,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         decodedStoredName: storedName,
         userAgent: navigator.userAgent,
         location: window.location.href,
+        localStorageAvailable: typeof localStorage !== "undefined",
+        localStorageKeys: Object.keys(localStorage),
       });
 
       // 토큰이 없어도 저장된 사용자 정보가 있으면 인증된 상태로 처리
@@ -99,16 +121,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 ? encodeURIComponent(user.avatar)
                 : "";
 
-              localStorage.setItem("user_name", encodedName);
-              localStorage.setItem("user_email", encodedEmail);
-              localStorage.setItem("user_id", user.id || "");
-              localStorage.setItem("user_provider", user.provider || "");
-              localStorage.setItem(
+              safeSetItem("user_name", encodedName);
+              safeSetItem("user_email", encodedEmail);
+              safeSetItem("user_id", user.id || "");
+              safeSetItem("user_provider", user.provider || "");
+              safeSetItem(
                 "user_createdAt",
                 user.createdAt || new Date().toISOString()
               );
               if (user.avatar) {
-                localStorage.setItem("user_avatar", encodedAvatar);
+                safeSetItem("user_avatar", encodedAvatar);
               }
 
               console.log("Token verification - saved to localStorage:", {
@@ -143,10 +165,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // 토큰이 없거나 유효하지 않지만 저장된 사용자 정보가 있는 경우
       if (storedName) {
         console.log("Using stored user info for authentication");
-        const storedAvatar = safeDecode(localStorage.getItem("user_avatar"));
-        const storedEmail = safeDecode(localStorage.getItem("user_email"));
-        const storedProvider = localStorage.getItem("user_provider");
-        const storedId = localStorage.getItem("user_id");
+        const storedAvatar = safeDecode(safeGetItem("user_avatar"));
+        const storedEmail = safeDecode(safeGetItem("user_email"));
+        const storedProvider = safeGetItem("user_provider");
+        const storedId = safeGetItem("user_id");
 
         console.log("Stored user data:", {
           name: storedName,
@@ -162,8 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           name: storedName,
           avatar: storedAvatar || undefined,
           provider: (storedProvider as "google" | "naver") || "google",
-          createdAt:
-            localStorage.getItem("user_createdAt") || new Date().toISOString(),
+          createdAt: safeGetItem("user_createdAt") || new Date().toISOString(),
         };
 
         setAuthState({
@@ -228,6 +249,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
+
+      // 안전한 localStorage 접근 함수
+      const safeSetItem = (key: string, value: string): boolean => {
+        try {
+          localStorage.setItem(key, value);
+          return true;
+        } catch (error) {
+          console.warn(`Failed to set localStorage item ${key}:`, error);
+          return false;
+        }
+      };
+
       const response =
         credentials.provider === "google"
           ? await authApi.googleLogin(credentials.accessToken)
@@ -241,20 +274,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             ? encodeURIComponent(user.avatar)
             : "";
 
-          localStorage.setItem("user_name", encodedName);
-          localStorage.setItem("user_email", encodedEmail);
-          localStorage.setItem("user_id", user.id || "");
-          localStorage.setItem("user_provider", user.provider || "");
-          localStorage.setItem(
+          safeSetItem("user_name", encodedName);
+          safeSetItem("user_email", encodedEmail);
+          safeSetItem("user_id", user.id || "");
+          safeSetItem("user_provider", user.provider || "");
+          safeSetItem(
             "user_createdAt",
             user.createdAt || new Date().toISOString()
           );
           if (user.avatar) {
-            localStorage.setItem("user_avatar", encodedAvatar);
+            safeSetItem("user_avatar", encodedAvatar);
           }
           // 서버에서 받은 토큰을 로컬 스토리지에 저장
           if (response.token) {
-            localStorage.setItem("auth_token", response.token);
+            safeSetItem("auth_token", response.token);
           }
 
           console.log("Login - saved to localStorage:", {
