@@ -20,7 +20,7 @@ export const api = ky.create({
       },
     ],
     afterResponse: [
-      (request, options, response) => {
+      (request, _options, response) => {
         // 응답 로그
         console.log("API Response:", {
           url: request.url,

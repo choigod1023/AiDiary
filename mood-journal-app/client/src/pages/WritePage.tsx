@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { diaryApi } from "../utils/api";
 import DiaryEditor from "../components/DiaryEditor";
 import { useAuth } from "../contexts/AuthContext";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const WritePage: React.FC = () => {
   const [editData, setEditData] = useState<{
@@ -39,6 +40,25 @@ const WritePage: React.FC = () => {
       alert("일기 저장에 실패했습니다. 다시 시도해주세요.");
     },
   });
+
+  // 인증 로딩 중이거나 인증되지 않은 경우
+  if (authState.isLoading) {
+    return (
+      <div className="flex flex-1 justify-center items-center p-8 w-full bg-amber-50 h-min-screen dark:bg-gray-900">
+        <div className="max-w-8xl w-[70vw] mx-auto rounded-2xl p-8 border-2 border-amber-800 shadow-md bg-amber-200 text-gray-900 dark:bg-gray-800 dark:text-white">
+          <div className="flex justify-center items-center py-16">
+            <LoadingSpinner size="lg" text="인증 상태를 확인하는 중..." />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 인증되지 않은 경우 로그인 페이지로 리다이렉트
+  if (!authState.isAuthenticated) {
+    navigate("/login?from=/write");
+    return null;
+  }
 
   const handleSave = async () => {
     if (!editData.entry.trim()) {

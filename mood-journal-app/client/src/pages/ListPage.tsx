@@ -5,11 +5,13 @@ import { match, P } from "ts-pattern";
 import { diaryApi } from "../utils/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { DiaryEntry } from "../types/diary";
+import { useAuth } from "../contexts/AuthContext";
 
 const ListPage: React.FC = () => {
   const navigate = useNavigate();
+  const { authState } = useAuth();
 
-  // React Query를 사용한 일기 목록 조회
+  // React Query를 사용한 일기 목록 조회 (인증된 경우에만)
   const {
     data: entries = [],
     isLoading,
@@ -18,7 +20,37 @@ const ListPage: React.FC = () => {
     queryKey: ["diary-list"],
     queryFn: diaryApi.getList,
     staleTime: 2 * 60 * 1000, // 2분
+    enabled: authState.isAuthenticated && !authState.isLoading, // 인증된 경우에만 실행
   });
+
+  // 인증 로딩 중이거나 인증되지 않은 경우
+  if (authState.isLoading) {
+    return (
+      <div className="flex flex-col justify-center items-center w-full min-h-screen text-gray-900 bg-amber-50 min-w-screen dark:bg-gray-900 dark:text-white">
+        <div className="p-8 mx-auto w-full max-w-4xl text-gray-900 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:text-white">
+          <div className="flex justify-between items-center mb-6">
+            <button
+              onClick={() => navigate("/")}
+              className="px-4 py-2 rounded-lg transition-colors bg-stone-300 text-stone-900 hover:bg-stone-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
+            >
+              뒤로 가기
+            </button>
+            <h1 className="text-4xl font-bold text-center">일기 목록</h1>
+            <div className="w-[100px]"></div>
+          </div>
+          <div className="flex justify-center items-center py-16">
+            <LoadingSpinner size="lg" text="인증 상태를 확인하는 중..." />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 인증되지 않은 경우 로그인 페이지로 리다이렉트
+  if (!authState.isAuthenticated) {
+    navigate("/login?from=/list");
+    return null;
+  }
 
   // ts-pattern을 사용한 상태별 렌더링
   return match({ isLoading, error, entries })
