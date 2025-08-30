@@ -58,16 +58,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       };
 
-      // 쿠키에서 사용자 정보 가져오기
+      // 쿠키에서 사용자 정보 가져오기 (개선된 버전)
       const getCookie = (name: string): string | null => {
         try {
+          // 모든 쿠키를 로그로 확인
+          console.log(`Getting cookie: ${name}`);
+          console.log(`All cookies: ${document.cookie}`);
+
           const value = document.cookie
             .split(";")
             .map((c) => c.trim())
             .find((c) => c.startsWith(`${name}=`));
+
           if (value) {
-            return safeDecode(value.split("=")[1]);
+            const decodedValue = safeDecode(value.split("=")[1]);
+            console.log(`Found cookie ${name}:`, decodedValue);
+            return decodedValue;
           }
+
+          console.log(`Cookie ${name} not found`);
           return null;
         } catch (error) {
           console.warn(`Failed to get cookie ${name}:`, error);
@@ -120,6 +129,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           isLoading: false,
         });
       } else {
+        console.log("No cookie user info found, trying server verification");
+
         // 쿠키에 사용자 정보가 없으면 서버 검증 시도
         try {
           const verified = await authApi.verifyToken();
@@ -128,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (verified.success) {
             // 프로필 별도 조회
             const user = await authApi.getProfile();
-            console.log("User profile loaded:", user);
+            console.log("User profile loaded from server:", user);
 
             setAuthState({
               user,
@@ -138,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             });
             return;
           } else {
-            console.log("Auth verification failed");
+            console.log("Auth verification failed - no valid session");
             setAuthState({
               user: null,
               token: null,

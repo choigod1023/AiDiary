@@ -154,12 +154,15 @@ router.post("/google", async (req, res) => {
     );
 
     const isProd = process.env.NODE_ENV === "production";
+    const domain = isProd ? ".vercel.app" : undefined; // 프로덕션에서 도메인 설정
+
     res
       .cookie("token", token, {
         httpOnly: true,
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_name", encodeURIComponent(user.name || ""), {
@@ -167,6 +170,7 @@ router.post("/google", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_email", encodeURIComponent(user.email || ""), {
@@ -174,6 +178,7 @@ router.post("/google", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_id", user._id?.toString() || "", {
@@ -181,6 +186,7 @@ router.post("/google", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_provider", user.provider, {
@@ -188,6 +194,7 @@ router.post("/google", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie(
@@ -198,6 +205,7 @@ router.post("/google", async (req, res) => {
           sameSite: isProd ? "none" : "lax",
           secure: isProd,
           path: "/",
+          domain: domain,
           maxAge: 30 * 24 * 60 * 60 * 1000,
         }
       )
@@ -298,12 +306,15 @@ router.post("/naver", async (req, res) => {
     );
 
     const isProd = process.env.NODE_ENV === "production";
+    const domain = isProd ? ".vercel.app" : undefined; // 프로덕션에서 도메인 설정
+
     res
       .cookie("token", token, {
         httpOnly: true,
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_name", encodeURIComponent(user.name || ""), {
@@ -311,6 +322,7 @@ router.post("/naver", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_email", encodeURIComponent(user.email || ""), {
@@ -318,6 +330,7 @@ router.post("/naver", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_id", user._id?.toString() || "", {
@@ -325,6 +338,7 @@ router.post("/naver", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie("user_provider", user.provider, {
@@ -332,6 +346,7 @@ router.post("/naver", async (req, res) => {
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
+        domain: domain,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .cookie(
@@ -342,6 +357,7 @@ router.post("/naver", async (req, res) => {
           sameSite: isProd ? "none" : "lax",
           secure: isProd,
           path: "/",
+          domain: domain,
           maxAge: 30 * 24 * 60 * 60 * 1000,
         }
       )
@@ -472,42 +488,50 @@ router.get(
 // 로그아웃: 쿠키 삭제
 router.post("/logout", (req, res) => {
   const isProd = process.env.NODE_ENV === "production";
+  const domain = isProd ? ".vercel.app" : undefined; // 프로덕션에서 도메인 설정
+
   res
     .clearCookie("token", {
       httpOnly: true,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
       path: "/",
+      domain: domain,
     })
     .clearCookie("user_name", {
       httpOnly: false,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
       path: "/",
+      domain: domain,
     })
     .clearCookie("user_email", {
       httpOnly: false,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
       path: "/",
+      domain: domain,
     })
     .clearCookie("user_id", {
       httpOnly: false,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
       path: "/",
+      domain: domain,
     })
     .clearCookie("user_provider", {
       httpOnly: false,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
       path: "/",
+      domain: domain,
     })
     .clearCookie("user_avatar", {
       httpOnly: false,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
       path: "/",
+      domain: domain,
     })
     .json({ success: true });
 });
