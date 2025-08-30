@@ -106,78 +106,92 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
     onVisibilityChange,
     onEdit,
     onDelete,
-  }) => (
-    <div className="fixed right-0 bottom-0 left-0 z-50 sm:hidden">
-      <div className="bg-white border-t-2 border-amber-700 shadow-lg dark:bg-gray-800 dark:border-stone-700">
-        <div className="flex justify-around items-center p-4">
-          {/* 공개/비공개 토글 */}
-          {isOwner && (
-            <button
-              onClick={onVisibilityChange}
-              className={`px-4 py-3 rounded-xl transition-colors border-2 text-sm font-semibold ${
-                visibility === "shared"
-                  ? "bg-green-600 text-white border-green-700 dark:bg-green-600 dark:border-green-500"
-                  : "bg-gray-600 text-white border-gray-700 dark:bg-gray-600 dark:border-gray-500"
-              }`}
-            >
-              {visibility === "shared" ? "🌐 공개" : "🔒 비공개"}
-            </button>
-          )}
+  }) => {
+    // 표시할 버튼들을 계산
+    const buttons = [];
 
-          {/* 링크 복사 버튼 */}
-          {visibility === "shared" && (
-            <button
-              onClick={() => {
-                const shareUrl = `${window.location.origin}/detail/${entryId}?token=${shareToken}`;
-                navigator.clipboard
-                  .writeText(shareUrl)
-                  .then(() => {
-                    alert("링크가 클립보드에 복사되었습니다!");
-                  })
-                  .catch(() => {
-                    window.prompt("아래 링크를 복사해서 공유하세요:", shareUrl);
-                  });
-              }}
-              className="px-4 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl border-2 border-blue-700 transition-colors dark:bg-blue-600 dark:border-blue-500"
-            >
-              🔗 링크
-            </button>
-          )}
+    if (isOwner) {
+      buttons.push({
+        key: "visibility",
+        onClick: onVisibilityChange,
+        className: `px-2 py-2 rounded-lg transition-colors border text-xs font-medium h-10 flex items-center justify-center ${
+          visibility === "shared"
+            ? "bg-green-600 text-white border-green-700 dark:bg-green-600 dark:border-green-500"
+            : "bg-gray-600 text-white border-gray-700 dark:bg-gray-600 dark:border-gray-500"
+        }`,
+        text: visibility === "shared" ? "🌐 공개" : "🔒 비공개",
+      });
+    }
 
-          {/* 수정 버튼 */}
-          {isOwner && !isEditing && (
-            <button
-              onClick={onEdit}
-              className="px-4 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl border-2 border-blue-700 transition-colors dark:bg-blue-600 dark:border-blue-500"
-            >
-              ✏️ 수정
-            </button>
-          )}
+    if (visibility === "shared") {
+      buttons.push({
+        key: "link",
+        onClick: () => {
+          const shareUrl = `${window.location.origin}/detail/${entryId}?token=${shareToken}`;
+          navigator.clipboard
+            .writeText(shareUrl)
+            .then(() => {
+              alert("링크가 클립보드에 복사되었습니다!");
+            })
+            .catch(() => {
+              window.prompt("아래 링크를 복사해서 공유하세요:", shareUrl);
+            });
+        },
+        className:
+          "px-2 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg border border-blue-700 transition-colors dark:bg-blue-600 dark:border-blue-500 h-10 flex items-center justify-center",
+        text: "🔗 링크 복사",
+      });
+    }
 
-          {/* 삭제 버튼 */}
-          {isOwner && (
-            <button
-              onClick={onDelete}
-              className="px-4 py-3 text-sm font-semibold text-white bg-rose-700 rounded-xl border-2 border-rose-800 transition-colors dark:bg-red-600 dark:border-red-700"
-            >
-              🗑️ 삭제
-            </button>
-          )}
+    if (isOwner && !isEditing) {
+      buttons.push({
+        key: "edit",
+        onClick: onEdit,
+        className:
+          "px-2 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg border border-blue-700 transition-colors dark:bg-blue-600 dark:border-blue-500 h-10 flex items-center justify-center",
+        text: "✏️ 수정",
+      });
+    }
+
+    if (isOwner) {
+      buttons.push({
+        key: "delete",
+        onClick: onDelete,
+        className:
+          "px-2 py-2 text-xs font-medium text-white bg-rose-700 rounded-lg border border-rose-800 transition-colors dark:bg-red-600 dark:border-red-700 h-10 flex items-center justify-center",
+        text: "🗑️ 삭제",
+      });
+    }
+
+    return (
+      <div className="fixed right-0 bottom-0 left-0 z-50 sm:hidden">
+        <div className="bg-white border-t-2 border-amber-700 shadow-lg dark:bg-gray-800 dark:border-stone-700">
+          <div className="flex gap-1 justify-around items-stretch p-2">
+            {buttons.map((button) => (
+              <button
+                key={button.key}
+                onClick={button.onClick}
+                className={`flex-1 ${button.className}`}
+              >
+                {button.text}
+              </button>
+            ))}
+          </div>
         </div>
+        {/* 하단 안전 영역을 위한 패딩 */}
+        <div className="bg-white safe-area-bottom dark:bg-gray-800"></div>
       </div>
-      {/* 하단 안전 영역을 위한 패딩 */}
-      <div className="bg-white safe-area-bottom dark:bg-gray-800"></div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="p-4 pb-32 m-2 mx-auto w-full max-w-6xl bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md text-stone-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 mobile-bottom-spacing">
+    <div className="p-2 pb-32 m-1 mx-auto w-full max-w-6xl bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md xs:p-4 xs:m-2 text-stone-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 mobile-bottom-spacing">
       {/* 헤더 - 공통 컨트롤 */}
-      <div className="pb-4 mb-6 border-b border-amber-700/70 dark:border-gray-700">
-        <div className="flex justify-between items-center h-12">
+      <div className="pb-2 mb-4 border-b xs:pb-4 xs:mb-6 border-amber-700/70 dark:border-gray-700">
+        <div className="flex justify-between items-center h-8 xs:h-12">
           <BackButton onClick={handleBack} />
-          {/* 컨트롤 버튼들 */}
-          <div className="flex items-center space-x-2">
+          {/* 컨트롤 버튼들 - 데스크톱에서만 표시 */}
+          <div className="hidden items-center space-x-2 md:flex">
             {/* 수정 모드에서는 '비공개' 버튼 하나만 노출하고, 클릭 시 즉시 공개로 전환 */}
             {isOwner && isEditing ? (
               // 수정 모드: 상단에서는 상태 텍스트만 표시 (전환은 에디터 내부에서 처리)
@@ -188,7 +202,7 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
             ) : (
               // 보기 모드: 상태 텍스트만
               <span
-                className={`px-3 py-2 rounded-lg border-2 text-sm ${
+                className={`px-3 py-2 rounded-lg border text-sm ${
                   entry.visibility === "shared"
                     ? "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-200 dark:border-green-700"
                     : "bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
@@ -215,7 +229,7 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
                       );
                     });
                 }}
-                className="px-3 py-2 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                className="px-3 py-2 text-sm text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                 title="일기 링크 복사"
               >
                 🔗 링크 복사
@@ -226,7 +240,7 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
             {isOwner && !isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-3 py-2 text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                className="hidden px-3 py-2 text-sm text-white bg-blue-600 rounded-lg transition-colors md:block hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 ✏️ 수정
               </button>
@@ -236,7 +250,7 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
             {isOwner && (
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 text-white bg-rose-700 rounded-lg transition-colors hover:bg-rose-800 dark:bg-red-600 dark:hover:bg-red-700"
+                className="hidden px-4 py-2 text-sm text-white bg-rose-700 rounded-lg transition-colors md:block hover:bg-rose-800 dark:bg-red-600 dark:hover:bg-red-700"
               >
                 삭제
               </button>

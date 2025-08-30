@@ -66,6 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
             try {
               localStorage.setItem("user_name", user.name || "");
+              localStorage.setItem("user_email", user.email || "");
+              localStorage.setItem("user_id", user.id || "");
+              localStorage.setItem("user_provider", user.provider || "");
+              localStorage.setItem(
+                "user_createdAt",
+                user.createdAt || new Date().toISOString()
+              );
               if (user.avatar) localStorage.setItem("user_avatar", user.avatar);
             } catch (error) {
               console.warn("Failed to save user info to localStorage:", error);
@@ -92,13 +99,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (storedName) {
         console.log("Using stored user info for authentication");
         const storedAvatar = localStorage.getItem("user_avatar");
+        const storedEmail = localStorage.getItem("user_email");
+        const storedProvider = localStorage.getItem("user_provider");
+        const storedId = localStorage.getItem("user_id");
+
         const user: User = {
-          id: "stored_user",
-          email: "stored@example.com",
+          id: storedId || "stored_user",
+          email: storedEmail || "stored@example.com",
           name: storedName,
           avatar: storedAvatar || undefined,
-          provider: "google" as const,
-          createdAt: new Date().toISOString(),
+          provider: (storedProvider as "google" | "naver") || "google",
+          createdAt:
+            localStorage.getItem("user_createdAt") || new Date().toISOString(),
         };
 
         setAuthState({
@@ -141,6 +153,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const user = response.user;
         try {
           localStorage.setItem("user_name", user.name || "");
+          localStorage.setItem("user_email", user.email || "");
+          localStorage.setItem("user_id", user.id || "");
+          localStorage.setItem("user_provider", user.provider || "");
+          localStorage.setItem(
+            "user_createdAt",
+            user.createdAt || new Date().toISOString()
+          );
           if (user.avatar) localStorage.setItem("user_avatar", user.avatar);
           // 서버에서 받은 토큰을 로컬 스토리지에 저장
           if (response.token) {
@@ -168,6 +187,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await authApi.logout().catch(() => undefined);
     try {
       localStorage.removeItem("user_name");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_provider");
+      localStorage.removeItem("user_createdAt");
       localStorage.removeItem("user_avatar");
       localStorage.removeItem("auth_token");
     } catch (error) {

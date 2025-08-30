@@ -239,42 +239,6 @@ const ServerComments: React.FC<{ entryId: string; shareToken?: string }> = ({
   );
 };
 
-// 하단 고정 툴바 컴포넌트 (모바일 전용)
-const MobileToolbar: React.FC<{
-  onAIFeedbackRequest: () => void;
-  isOwner: boolean;
-  aiLoading: boolean;
-  hasFeedback: boolean;
-}> = ({ onAIFeedbackRequest, isOwner, aiLoading, hasFeedback }) => (
-  <div className="fixed right-0 bottom-0 left-0 z-50 sm:hidden">
-    <div className="bg-white border-t-2 border-amber-700 shadow-lg dark:bg-gray-800 dark:border-stone-700">
-      <div className="flex justify-center items-center p-4 space-x-4">
-        <button
-          onClick={onAIFeedbackRequest}
-          disabled={!isOwner || aiLoading || hasFeedback}
-          className={`flex-1 max-w-xs px-6 py-4 text-lg font-semibold rounded-xl transition-all transform active:scale-95 ${
-            !isOwner || hasFeedback
-              ? "bg-stone-300 text-stone-800 dark:bg-stone-700 dark:text-stone-300"
-              : aiLoading
-              ? "bg-amber-400 text-stone-900"
-              : "bg-amber-700 text-amber-50 hover:bg-amber-800 shadow-lg"
-          }`}
-        >
-          {!isOwner
-            ? "작성자 전용"
-            : hasFeedback
-            ? "☕ AI 피드백 저장됨"
-            : aiLoading
-            ? "🤔 AI가 생각 중..."
-            : "☕ 한마디 듣기"}
-        </button>
-      </div>
-    </div>
-    {/* 하단 안전 영역을 위한 패딩 */}
-    <div className="bg-white safe-area-bottom dark:bg-gray-800"></div>
-  </div>
-);
-
 // 메인 DiaryViewer 컴포넌트
 const DiaryViewer: React.FC<DiaryViewerProps> = ({
   entry,
@@ -302,14 +266,6 @@ const DiaryViewer: React.FC<DiaryViewerProps> = ({
         entryId={String(entry.id)}
         shareToken={entry.shareToken}
         visibility={entry.visibility}
-      />
-
-      {/* 모바일 하단 툴바 */}
-      <MobileToolbar
-        onAIFeedbackRequest={onAIFeedbackRequest}
-        isOwner={isOwner}
-        aiLoading={aiLoading}
-        hasFeedback={Boolean(entry.aiFeedback)}
       />
     </>
   );
