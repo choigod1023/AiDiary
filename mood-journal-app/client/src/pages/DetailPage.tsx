@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { diaryApi } from "../utils/api";
@@ -30,6 +30,14 @@ const DetailPage: React.FC = () => {
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5분
   });
+
+  // AI 피드백이 있으면 자동으로 표시
+  useEffect(() => {
+    if (entry?.aiFeedback) {
+      setAIFeedback(entry.aiFeedback);
+      setShowAIFeedback(true);
+    }
+  }, [entry?.aiFeedback]);
 
   // 일기 삭제 mutation
   const deleteMutation = useMutation({

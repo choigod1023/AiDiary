@@ -114,8 +114,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api/auth", authRoutes);
 app.use("/api/diary", diaryRoutes);
 app.use("/api/diary", commentRoutes);
+app.use("/api/diary", aiFeedbackRoutes);
 app.use("/api/emotions", emotionRoutes);
-app.use("/api/ai-feedback", aiFeedbackRoutes);
 app.use("/api/share", shareRoutes);
 
 // 공개 일기 엔드포인트는 제거되었습니다. 인증된 라우터만 사용합니다.

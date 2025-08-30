@@ -105,7 +105,7 @@ export const diaryApi = {
           emotion: r.entry?.emotion,
           entry: r.entry?.entry,
           aiFeedback: r.entry?.aiFeedback,
-          visibility: r.entry?.visibility,
+          visibility: r.entry?.visibility || "private",
           shareToken: r.entry?.shareToken,
           userId: r.entry?.userId,
           authorName: r.entry?.authorName,
