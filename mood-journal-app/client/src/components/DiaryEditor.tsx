@@ -48,7 +48,7 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
             onEditDataChange({ ...editData, title: e.target.value })
           }
           disabled={editData.useAITitle} // AI 제목 생성 체크 시 비활성화
-          className={`w-full p-3 text-2xl font-bold rounded-lg bg-amber-50 border-2 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none ${
+          className={`w-full p-3 text-2xl font-bold rounded-lg text-black bg-amber-50 border-2 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none ${
             editData.useAITitle
               ? "bg-amber-100 text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500"
               : "bg-white border-amber-600 dark:bg-gray-700 dark:text-white dark:border-gray-600"
@@ -137,7 +137,7 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
             onEditDataChange({ ...editData, entry: e.target.value })
           }
           rows={10}
-          className="p-4 w-full text-lg bg-amber-50 rounded-lg border-2 border-amber-600 resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          className="p-4 w-full text-lg text-black bg-amber-50 rounded-lg border-2 border-amber-600 resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-gray-700 dark:text-white dark:border-gray-600"
           placeholder="일기 내용을 입력하세요"
         />
       </div>
