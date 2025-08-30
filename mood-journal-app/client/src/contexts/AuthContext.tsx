@@ -58,7 +58,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // 로컬 스토리지에서 토큰과 사용자 정보 확인
       const token = localStorage.getItem("auth_token");
-      const storedName = safeDecode(localStorage.getItem("user_name"));
+      const rawStoredName = localStorage.getItem("user_name");
+      const storedName = safeDecode(rawStoredName);
+
+      console.log("Auth check - localStorage data:", {
+        token: token ? "exists" : "missing",
+        rawStoredName,
+        decodedStoredName: storedName,
+        userAgent: navigator.userAgent,
+        location: window.location.href,
+      });
 
       // 토큰이 없어도 저장된 사용자 정보가 있으면 인증된 상태로 처리
       if (!token && !storedName) {
@@ -84,25 +93,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             console.log("User profile loaded:", user);
 
             try {
-              localStorage.setItem(
-                "user_name",
-                encodeURIComponent(user.name || "")
-              );
-              localStorage.setItem(
-                "user_email",
-                encodeURIComponent(user.email || "")
-              );
+              const encodedName = encodeURIComponent(user.name || "");
+              const encodedEmail = encodeURIComponent(user.email || "");
+              const encodedAvatar = user.avatar
+                ? encodeURIComponent(user.avatar)
+                : "";
+
+              localStorage.setItem("user_name", encodedName);
+              localStorage.setItem("user_email", encodedEmail);
               localStorage.setItem("user_id", user.id || "");
               localStorage.setItem("user_provider", user.provider || "");
               localStorage.setItem(
                 "user_createdAt",
                 user.createdAt || new Date().toISOString()
               );
-              if (user.avatar)
-                localStorage.setItem(
-                  "user_avatar",
-                  encodeURIComponent(user.avatar)
-                );
+              if (user.avatar) {
+                localStorage.setItem("user_avatar", encodedAvatar);
+              }
+
+              console.log("Token verification - saved to localStorage:", {
+                originalName: user.name,
+                encodedName,
+                originalEmail: user.email,
+                encodedEmail,
+                id: user.id,
+                provider: user.provider,
+              });
             } catch (error) {
               console.warn("Failed to save user info to localStorage:", error);
             }
@@ -132,6 +148,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const storedProvider = localStorage.getItem("user_provider");
         const storedId = localStorage.getItem("user_id");
 
+        console.log("Stored user data:", {
+          name: storedName,
+          email: storedEmail,
+          id: storedId,
+          provider: storedProvider,
+          avatar: storedAvatar,
+        });
+
         const user: User = {
           id: storedId || "stored_user",
           email: storedEmail || "stored@example.com",
@@ -149,12 +173,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           isLoading: false,
         });
       } else {
-        setAuthState({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
+        // 추가 fallback: 쿠키에서 사용자 정보 확인
+        const cookieName = (() => {
+          const rawCookie = document.cookie
+            .split(";")
+            .map((c) => c.trim())
+            .find((c) => c.startsWith("display_name="));
+          if (!rawCookie) return null;
+          const rawValue = rawCookie.slice("display_name=".length);
+          return safeDecode(rawValue);
+        })();
+
+        if (cookieName) {
+          console.log("Using cookie user info as fallback:", cookieName);
+          const user: User = {
+            id: "cookie_user",
+            email: "cookie@example.com",
+            name: cookieName,
+            avatar: undefined,
+            provider: "google",
+            createdAt: new Date().toISOString(),
+          };
+
+          setAuthState({
+            user,
+            token: null,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } else {
+          setAuthState({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
       }
     } catch (error) {
       console.error("Auth check error:", error);
@@ -181,29 +235,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (response.success && response.user) {
         const user = response.user;
         try {
-          localStorage.setItem(
-            "user_name",
-            encodeURIComponent(user.name || "")
-          );
-          localStorage.setItem(
-            "user_email",
-            encodeURIComponent(user.email || "")
-          );
+          const encodedName = encodeURIComponent(user.name || "");
+          const encodedEmail = encodeURIComponent(user.email || "");
+          const encodedAvatar = user.avatar
+            ? encodeURIComponent(user.avatar)
+            : "";
+
+          localStorage.setItem("user_name", encodedName);
+          localStorage.setItem("user_email", encodedEmail);
           localStorage.setItem("user_id", user.id || "");
           localStorage.setItem("user_provider", user.provider || "");
           localStorage.setItem(
             "user_createdAt",
             user.createdAt || new Date().toISOString()
           );
-          if (user.avatar)
-            localStorage.setItem(
-              "user_avatar",
-              encodeURIComponent(user.avatar)
-            );
+          if (user.avatar) {
+            localStorage.setItem("user_avatar", encodedAvatar);
+          }
           // 서버에서 받은 토큰을 로컬 스토리지에 저장
           if (response.token) {
             localStorage.setItem("auth_token", response.token);
           }
+
+          console.log("Login - saved to localStorage:", {
+            originalName: user.name,
+            encodedName,
+            originalEmail: user.email,
+            encodedEmail,
+            id: user.id,
+            provider: user.provider,
+            hasToken: !!response.token,
+          });
         } catch (error) {
           console.warn("Failed to save user info to localStorage:", error);
         }
