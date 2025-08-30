@@ -68,7 +68,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const safeSetItem = (key: string, value: string): boolean => {
         try {
+          // localStorage에 저장
           localStorage.setItem(key, value);
+
+          // sessionStorage에 백업
+          try {
+            sessionStorage.setItem(key, value);
+          } catch (e) {
+            console.warn(`Failed to backup to sessionStorage: ${key}`, e);
+          }
+
+          // 쿠키에 백업 (중요한 데이터만)
+          if (key === "user_name" || key === "auth_token") {
+            try {
+              document.cookie = `${key}=${encodeURIComponent(
+                value
+              )}; path=/; max-age=86400; SameSite=Lax`;
+            } catch (e) {
+              console.warn(`Failed to backup to cookie: ${key}`, e);
+            }
+          }
+
+          // 즉시 확인하여 저장이 제대로 되었는지 검증
+          const saved = localStorage.getItem(key);
+          if (saved !== value) {
+            console.warn(`localStorage verification failed for ${key}`);
+            return false;
+          }
           return true;
         } catch (error) {
           console.warn(`Failed to set localStorage item ${key}:`, error);
@@ -76,9 +102,81 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       };
 
+      // localStorage 지속성 확인 및 복구
+      const ensurePersistence = () => {
+        const testKey = "__persistence_test__";
+        const testValue = Date.now().toString();
+
+        try {
+          localStorage.setItem(testKey, testValue);
+          const retrieved = localStorage.getItem(testKey);
+          localStorage.removeItem(testKey);
+
+          if (retrieved !== testValue) {
+            console.error("localStorage persistence test failed");
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error("localStorage persistence test error:", error);
+          return false;
+        }
+      };
+
+      // 지속성 확인
+      const isPersistent = ensurePersistence();
+      console.log("localStorage persistence check:", isPersistent);
+
+      // 복구 함수
+      const recoverFromBackup = (key: string): string | null => {
+        // sessionStorage에서 복구 시도
+        try {
+          const sessionValue = sessionStorage.getItem(key);
+          if (sessionValue) {
+            console.log(`Recovered ${key} from sessionStorage`);
+            return sessionValue;
+          }
+        } catch (e) {
+          console.warn(`Failed to recover from sessionStorage: ${key}`, e);
+        }
+
+        // 쿠키에서 복구 시도
+        try {
+          const cookieValue = document.cookie
+            .split(";")
+            .map((c) => c.trim())
+            .find((c) => c.startsWith(`${key}=`));
+          if (cookieValue) {
+            const value = decodeURIComponent(cookieValue.split("=")[1]);
+            console.log(`Recovered ${key} from cookie`);
+            return value;
+          }
+        } catch (e) {
+          console.warn(`Failed to recover from cookie: ${key}`, e);
+        }
+
+        return null;
+      };
+
       // 로컬 스토리지에서 토큰과 사용자 정보 확인
-      const token = safeGetItem("auth_token");
-      const rawStoredName = safeGetItem("user_name");
+      let token = safeGetItem("auth_token");
+      let rawStoredName = safeGetItem("user_name");
+
+      // localStorage가 비어있으면 백업에서 복구
+      if (!token) {
+        token = recoverFromBackup("auth_token");
+        if (token) {
+          safeSetItem("auth_token", token);
+        }
+      }
+
+      if (!rawStoredName) {
+        rawStoredName = recoverFromBackup("user_name");
+        if (rawStoredName) {
+          safeSetItem("user_name", rawStoredName);
+        }
+      }
+
       const storedName = safeDecode(rawStoredName);
 
       console.log("Auth check - localStorage data:", {
@@ -250,10 +348,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-      // 안전한 localStorage 접근 함수
+      // 안전한 localStorage 접근 함수 (백업 포함)
       const safeSetItem = (key: string, value: string): boolean => {
         try {
+          // localStorage에 저장
           localStorage.setItem(key, value);
+
+          // sessionStorage에 백업
+          try {
+            sessionStorage.setItem(key, value);
+          } catch (e) {
+            console.warn(`Failed to backup to sessionStorage: ${key}`, e);
+          }
+
+          // 쿠키에 백업 (중요한 데이터만)
+          if (key === "user_name" || key === "auth_token") {
+            try {
+              document.cookie = `${key}=${encodeURIComponent(
+                value
+              )}; path=/; max-age=86400; SameSite=Lax`;
+            } catch (e) {
+              console.warn(`Failed to backup to cookie: ${key}`, e);
+            }
+          }
+
           return true;
         } catch (error) {
           console.warn(`Failed to set localStorage item ${key}:`, error);

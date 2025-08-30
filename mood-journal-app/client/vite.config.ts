@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt", // autoUpdate에서 prompt로 변경
       manifest: {
         name: "Mood Journal",
         short_name: "MoodJournal",
@@ -20,8 +20,8 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api\//],
-        skipWaiting: true,
-        clientsClaim: true,
+        skipWaiting: false, // true에서 false로 변경
+        clientsClaim: false, // true에서 false로 변경
         runtimeCaching: [
           {
             urlPattern: ({ request }) =>
