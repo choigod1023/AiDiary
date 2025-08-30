@@ -162,13 +162,45 @@ router.post("/google", async (req, res) => {
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
-      .cookie("display_name", encodeURIComponent(user.name || ""), {
+      .cookie("user_name", encodeURIComponent(user.name || ""), {
         httpOnly: false,
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
+      .cookie("user_email", encodeURIComponent(user.email || ""), {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("user_id", user._id?.toString() || "", {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("user_provider", user.provider, {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie(
+        "user_avatar",
+        user.avatar ? encodeURIComponent(user.avatar) : "",
+        {
+          httpOnly: false,
+          sameSite: isProd ? "none" : "lax",
+          secure: isProd,
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+        }
+      )
       .json({
         success: true,
         user: {
@@ -274,13 +306,45 @@ router.post("/naver", async (req, res) => {
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
-      .cookie("display_name", encodeURIComponent(user.name || ""), {
+      .cookie("user_name", encodeURIComponent(user.name || ""), {
         httpOnly: false,
         sameSite: isProd ? "none" : "lax",
         secure: isProd,
         path: "/",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
+      .cookie("user_email", encodeURIComponent(user.email || ""), {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("user_id", user._id?.toString() || "", {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("user_provider", user.provider, {
+        httpOnly: false,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie(
+        "user_avatar",
+        user.avatar ? encodeURIComponent(user.avatar) : "",
+        {
+          httpOnly: false,
+          sameSite: isProd ? "none" : "lax",
+          secure: isProd,
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+        }
+      )
       .json({
         success: true,
         user: {
@@ -415,7 +479,31 @@ router.post("/logout", (req, res) => {
       secure: isProd,
       path: "/",
     })
-    .clearCookie("display_name", {
+    .clearCookie("user_name", {
+      httpOnly: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+    })
+    .clearCookie("user_email", {
+      httpOnly: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+    })
+    .clearCookie("user_id", {
+      httpOnly: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+    })
+    .clearCookie("user_provider", {
+      httpOnly: false,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+    })
+    .clearCookie("user_avatar", {
       httpOnly: false,
       sameSite: isProd ? "none" : "lax",
       secure: isProd,
