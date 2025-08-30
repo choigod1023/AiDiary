@@ -32,6 +32,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isLoading: true,
   });
 
+  // localStorage 변경 감지
+  useEffect(() => {
+    const originalSetItem = localStorage.setItem;
+    const originalRemoveItem = localStorage.removeItem;
+    const originalClear = localStorage.clear;
+
+    // localStorage.setItem 오버라이드
+    localStorage.setItem = function (key: string, value: string) {
+      console.log(`localStorage.setItem called: ${key} = ${value}`);
+      return originalSetItem.call(this, key, value);
+    };
+
+    // localStorage.removeItem 오버라이드 - 중요 키 보호
+    localStorage.removeItem = function (key: string) {
+      console.log(`localStorage.removeItem called: ${key}`);
+
+      // 중요한 키들은 삭제 방지
+      const protectedKeys = [
+        "user_name",
+        "auth_token",
+        "user_email",
+        "user_id",
+        "user_provider",
+      ];
+      if (protectedKeys.includes(key)) {
+        console.log(
+          `localStorage.removeItem BLOCKED for protected key: ${key}`
+        );
+        return;
+      }
+
+      return originalRemoveItem.call(this, key);
+    };
+
+    // localStorage.clear 오버라이드 - 방지
+    localStorage.clear = function () {
+      console.log("localStorage.clear called - THIS IS THE PROBLEM!");
+      console.trace("localStorage.clear stack trace");
+      console.log("localStorage.clear BLOCKED to prevent data loss");
+      return; // clear 실행 방지
+    };
+
+    return () => {
+      // 원래 함수로 복원
+      localStorage.setItem = originalSetItem;
+      localStorage.removeItem = originalRemoveItem;
+      localStorage.clear = originalClear;
+    };
+  }, []);
+
   const checkAuth = async () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
@@ -342,6 +392,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     checkAuth();
+  }, []);
+
+  // 페이지 언로드 시 localStorage 보호
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      console.log("Page unloading - protecting localStorage data");
+      // localStorage 데이터를 sessionStorage에 백업
+      try {
+        const userData = {
+          user_name: localStorage.getItem("user_name"),
+          auth_token: localStorage.getItem("auth_token"),
+          user_email: localStorage.getItem("user_email"),
+          user_id: localStorage.getItem("user_id"),
+          user_provider: localStorage.getItem("user_provider"),
+        };
+
+        Object.entries(userData).forEach(([key, value]) => {
+          if (value) {
+            sessionStorage.setItem(key, value);
+          }
+        });
+      } catch (error) {
+        console.warn("Failed to backup localStorage on unload:", error);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
