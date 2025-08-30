@@ -183,13 +183,13 @@ const ServerComments: React.FC<{ entryId: string; shareToken?: string }> = ({
           value={authorName}
           onChange={(e) => setAuthorName(e.target.value)}
           placeholder="닉네임 (선택)"
-          className="px-4 py-3 sm:px-3 sm:py-2 md:px-4 md:py-2.5 w-full text-base sm:text-sm md:text-base bg-amber-50 rounded-lg border border-amber-200 sm:w-40 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-stone-700 dark:text-white dark:border-stone-600"
+          className="px-4 py-3 sm:px-3 sm:py-2 md:px-4 text-black md:py-2.5 w-full text-base sm:text-sm md:text-base bg-amber-50 rounded-lg border border-amber-200 sm:w-40 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-stone-700 dark:text-white dark:border-stone-600"
         />
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="댓글을 입력하세요"
-          className="px-4 py-3 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-base sm:text-sm md:text-base bg-amber-50 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-stone-700 dark:text-white dark:border-stone-600"
+          className="px-4 py-3 sm:px-3 sm:py-2 md:px-4 text-black md:py-2.5 text-base sm:text-sm md:text-base bg-amber-50 rounded-lg border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-stone-700 dark:text-white dark:border-stone-600"
           disabled={mutation.isPending}
         />
         <button
