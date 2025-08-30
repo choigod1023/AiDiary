@@ -51,12 +51,11 @@ const Header: React.FC = () => {
   const storedName = safeDecode(localStorage.getItem("user_name"));
 
   const displayName = authState.user?.name || storedName || cookieName || "";
-  const nameReady = Boolean(displayName.trim());
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 backdrop-blur-sm bg-white/90 dark:bg-gray-800/90 dark:border-gray-700 mobile-safe-top">
-        <div className="flex justify-between items-center px-6 py-3">
+      <header className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 backdrop-blur-sm bg-white/90 dark:bg-gray-800/90 dark:border-gray-700 safe-top">
+        <div className="flex justify-between items-center px-mobile py-3">
           <div
             onClick={handleLogoClick}
             className="flex items-center space-x-2 transition-opacity cursor-pointer hover:opacity-80"
@@ -64,20 +63,20 @@ const Header: React.FC = () => {
             <div className="flex justify-center items-center w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg">
               <span className="text-lg font-bold text-white">📝</span>
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
+            <span className="text-mobile-xl font-bold text-gray-900 dark:text-white">
               Mood Journal
             </span>
           </div>
 
           <div className="flex items-center space-x-4">
-            {authState.isAuthenticated && nameReady ? (
+            {authState.isAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-mobile-sm text-gray-700 dark:text-gray-300 hidden xs:block">
                   안녕하세요, {displayName}님! 👋
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-2 text-sm text-white bg-red-500 rounded-lg transition-colors hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                  className="px-3 py-2 text-mobile-sm text-white bg-red-500 rounded-lg transition-colors hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 touch-target"
                 >
                   로그아웃
                 </button>
@@ -85,7 +84,7 @@ const Header: React.FC = () => {
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="px-3 py-2 text-sm text-white bg-blue-500 rounded-lg transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                className="px-3 py-2 text-mobile-sm text-white bg-blue-500 rounded-lg transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 touch-target"
               >
                 🔒 로그인
               </button>
@@ -94,7 +93,7 @@ const Header: React.FC = () => {
         </div>
       </header>
 
-      <div className="mobile-header-height"></div>
+      <div className="header-mobile"></div>
 
       <LoginModal
         isOpen={showLoginModal}

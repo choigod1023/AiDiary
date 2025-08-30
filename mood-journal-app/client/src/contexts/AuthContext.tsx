@@ -37,10 +37,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setAuthState((prev) => ({ ...prev, isLoading: true }));
       console.log("Checking auth...", { userAgent: navigator.userAgent });
 
-      // 로컬 스토리지에서 토큰 확인
+      // 로컬 스토리지에서 토큰과 사용자 정보 확인
       const token = localStorage.getItem("auth_token");
-      if (!token) {
-        console.log("No token found in localStorage");
+      const storedName = localStorage.getItem("user_name");
+
+      // 토큰이 없어도 저장된 사용자 정보가 있으면 인증된 상태로 처리
+      if (!token && !storedName) {
+        console.log("No token or user info found in localStorage");
         setAuthState({
           user: null,
           token: null,
@@ -50,30 +53,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const verified = await authApi.verifyToken();
-      console.log("Auth verification result:", verified);
-
-      if (verified.success) {
-        // 프로필 별도 조회 + 표시용 정보 캐시
-        const user = await authApi.getProfile();
-        console.log("User profile loaded:", user);
-
+      // 토큰이 있으면 서버 검증 시도
+      if (token) {
         try {
-          localStorage.setItem("user_name", user.name || "");
-          if (user.avatar) localStorage.setItem("user_avatar", user.avatar);
+          const verified = await authApi.verifyToken();
+          console.log("Auth verification result:", verified);
+
+          if (verified.success) {
+            // 프로필 별도 조회 + 표시용 정보 캐시
+            const user = await authApi.getProfile();
+            console.log("User profile loaded:", user);
+
+            try {
+              localStorage.setItem("user_name", user.name || "");
+              if (user.avatar) localStorage.setItem("user_avatar", user.avatar);
+            } catch (error) {
+              console.warn("Failed to save user info to localStorage:", error);
+            }
+            setAuthState({
+              user,
+              token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return;
+          } else {
+            console.log("Auth verification failed");
+            // 토큰이 유효하지 않으면 제거
+            localStorage.removeItem("auth_token");
+          }
         } catch (error) {
-          console.warn("Failed to save user info to localStorage:", error);
+          console.error("Token verification error:", error);
+          localStorage.removeItem("auth_token");
         }
+      }
+
+      // 토큰이 없거나 유효하지 않지만 저장된 사용자 정보가 있는 경우
+      if (storedName) {
+        console.log("Using stored user info for authentication");
+        const storedAvatar = localStorage.getItem("user_avatar");
+        const user: User = {
+          id: "stored_user",
+          email: "stored@example.com",
+          name: storedName,
+          avatar: storedAvatar || undefined,
+          provider: "google" as const,
+          createdAt: new Date().toISOString(),
+        };
+
         setAuthState({
           user,
-          token,
+          token: null,
           isAuthenticated: true,
           isLoading: false,
         });
       } else {
-        console.log("Auth verification failed");
-        // 토큰이 유효하지 않으면 제거
-        localStorage.removeItem("auth_token");
         setAuthState({
           user: null,
           token: null,
@@ -83,8 +117,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } catch (error) {
       console.error("Auth check error:", error);
-      // 에러 발생 시 토큰 제거
-      localStorage.removeItem("auth_token");
       setAuthState({
         user: null,
         token: null,
