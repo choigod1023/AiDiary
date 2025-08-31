@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const HomePage: React.FC = () => {
   return (
-    <div className="flex flex-col justify-center items-center w-full min-h-screen-mobile text-gray-900 bg-amber-50 dark:bg-gray-900 dark:text-white px-mobile">
+    <div className="flex flex-col justify-center items-center w-full min-h-screen-mobile text-gray-900 bg-amber-50 dark:bg-gray-900 dark:text-white sm:px-mobile">
       <h1 className="mb-6 text-mobile-2xl font-bold text-center">
         감정 일기 앱에 오신 것을 환영합니다!
       </h1>

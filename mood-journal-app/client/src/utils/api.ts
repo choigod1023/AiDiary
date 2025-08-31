@@ -122,9 +122,18 @@ export const diaryApi = {
       ),
 
   // 특정 일기 조회
-  getById: (id: string): Promise<DiaryEntry> =>
-    api
-      .get(`api/diary/${id}`)
+  getById: (id: string, shareToken?: string): Promise<DiaryEntry> => {
+    const searchParams = new URLSearchParams();
+
+    // 공유 토큰이 있는 경우에만 쿼리 파라미터로 전달
+    if (shareToken) {
+      searchParams.append("token", shareToken);
+    }
+
+    return api
+      .get(`api/diary/${id}`, {
+        searchParams: searchParams.toString() ? searchParams : undefined,
+      })
       .json<ServerDiaryEntry>()
       .then((e) => ({
         id: e.entryId ?? e.id,
@@ -137,7 +146,8 @@ export const diaryApi = {
         shareToken: e.shareToken,
         userId: e.userId,
         authorName: e.authorName,
-      })),
+      }));
+  },
 
   // 일기 저장
   create: (payload: {

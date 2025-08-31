@@ -25,8 +25,8 @@ const DetailPage: React.FC = () => {
     isLoading,
     error,
   } = useQuery<DiaryEntry>({
-    queryKey: ["diary", id],
-    queryFn: () => diaryApi.getById(id!),
+    queryKey: ["diary", id, token],
+    queryFn: () => diaryApi.getById(id!, token || undefined),
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5분
   });
@@ -143,6 +143,13 @@ const DetailPage: React.FC = () => {
   }
 
   if (error) {
+    // 권한 에러인지 확인
+    const isAccessDenied =
+      error instanceof Error &&
+      (error.message.includes("Access denied") ||
+        error.message.includes("권한이 없습니다") ||
+        (error as { response?: { status?: number } }).response?.status === 403);
+
     return (
       <div className="flex flex-col justify-center items-center w-full min-h-screen text-gray-900 bg-amber-50 min-w-screen dark:bg-gray-900 dark:text-white">
         <div className="p-8 mx-auto w-full max-w-6xl text-gray-900 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:text-white">
@@ -154,9 +161,23 @@ const DetailPage: React.FC = () => {
               뒤로 가기
             </button>
           </div>
-          <div className="p-4 bg-red-100 rounded-lg border border-red-200 dark:bg-red-900 dark:border-red-800">
-            <p className="text-red-800 dark:text-red-200">
-              일기 항목을 불러오는데 실패했습니다. 다시 시도해주세요.
+          <div
+            className={`p-4 rounded-lg border ${
+              isAccessDenied
+                ? "bg-yellow-100 border-yellow-200 dark:bg-yellow-900 dark:border-yellow-800"
+                : "bg-red-100 border-red-200 dark:bg-red-900 dark:border-red-800"
+            }`}
+          >
+            <p
+              className={`${
+                isAccessDenied
+                  ? "text-yellow-800 dark:text-yellow-200"
+                  : "text-red-800 dark:text-red-200"
+              }`}
+            >
+              {isAccessDenied
+                ? "이 게시글에 접근할 권한이 없습니다. 비공개 게시글이거나 잘못된 링크입니다."
+                : "일기 항목을 불러오는데 실패했습니다. 다시 시도해주세요."}
             </p>
           </div>
         </div>

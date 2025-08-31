@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { DiaryEntryModel } from "../../models/DiaryEntry";
 import UserModel from "../../models/User";
 import {
@@ -256,10 +257,11 @@ router.get(
  *       500:
  *         description: 서버 오류
  */
-// 특정 ID의 일기 조회 API
+// 특정 ID의 일기 조회 API (권한 검증 포함)
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { token } = req.query; // URL 쿼리에서 토큰 확인
 
     // ID 유효성 검사
     const numericId = Number(id);
@@ -273,6 +275,75 @@ router.get("/:id", async (req: Request, res: Response) => {
 
     if (!entry) {
       return res.status(404).json({ error: "Diary entry not found" });
+    }
+
+    // 권한 검증
+    let hasAccess = false;
+    let currentUserId: string | null = null;
+
+    console.log("=== 권한 검증 시작 ===");
+    console.log("Entry ID:", numericId);
+    console.log("Entry userId:", entry.userId);
+    console.log("Entry visibility:", entry.visibility);
+    console.log("Query token:", token);
+    console.log("Authorization header:", req.headers.authorization);
+
+    // 1. 토큰이 있는 경우 인증된 사용자 확인
+    if (token) {
+      try {
+        const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+        const decoded = jwt.verify(token as string, JWT_SECRET) as any;
+        currentUserId = decoded.id;
+
+        // 작성자 본인인 경우 접근 허용
+        if (currentUserId === entry.userId) {
+          hasAccess = true;
+        }
+      } catch (tokenError) {
+        console.log("Token verification failed:", tokenError);
+        // 토큰이 유효하지 않아도 계속 진행 (공개 게시글 확인)
+      }
+    }
+
+    // 2. 공개 게시글이고 공유 토큰이 일치하는 경우 접근 허용
+    if (
+      !hasAccess &&
+      entry.visibility === "shared" &&
+      token === entry.shareToken
+    ) {
+      hasAccess = true;
+    }
+
+    // 3. 토큰이 없지만 Authorization 헤더로 인증된 사용자인 경우 확인
+    if (!hasAccess && !token) {
+      try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const bearerToken = authHeader.substring(7);
+          const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+          const decoded = jwt.verify(bearerToken, JWT_SECRET) as any;
+          currentUserId = decoded.id;
+
+          // 작성자 본인인 경우 접근 허용
+          if (currentUserId === entry.userId) {
+            hasAccess = true;
+          }
+        }
+      } catch (authError) {
+        console.log("Authorization header verification failed:", authError);
+      }
+    }
+
+    console.log("=== 권한 검증 결과 ===");
+    console.log("hasAccess:", hasAccess);
+    console.log("currentUserId:", currentUserId);
+
+    // 4. 접근 권한이 없는 경우
+    if (!hasAccess) {
+      return res.status(403).json({
+        error: "Access denied",
+        message: "이 게시글에 접근할 권한이 없습니다.",
+      });
     }
 
     // 작성자 정보 조회하여 이름 추가

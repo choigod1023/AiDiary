@@ -35,7 +35,7 @@ const App: React.FC = () => {
         <div className="flex flex-col w-full min-h-screen-mobile text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
           <Header />
 
-          <div className="flex flex-col flex-1 justify-center items-center px-mobile">
+          <div className="flex flex-col flex-1 justify-center items-center sm:px-mobile">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
