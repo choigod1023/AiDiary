@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -106,6 +106,17 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
+    }
+
+    // 클라이언트에게 업데이트 알림
+    if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'SW_UPDATE_AVAILABLE'
+                });
+            });
+        });
     }
 });
 
