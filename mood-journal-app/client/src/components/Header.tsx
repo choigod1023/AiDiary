@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import LoginModal from "./LoginModal";
+import LoadingSpinner from "./LoadingSpinner";
 
 const Header: React.FC = () => {
   const { authState, logout } = useAuth();
@@ -60,6 +61,39 @@ const Header: React.FC = () => {
     }
     return name;
   };
+
+  // 로딩 중일 때는 스피너 표시
+  if (authState.isLoading) {
+    return (
+      <header className="fixed top-0 right-0 left-0 z-50 border-b border-gray-200 backdrop-blur-sm bg-white/90 dark:bg-gray-800/90 dark:border-gray-700 safe-top">
+        <div className="flex justify-between items-center py-2 px-mobile">
+          <div
+            onClick={handleLogoClick}
+            className="flex flex-shrink-0 items-center space-x-2 transition-opacity cursor-pointer hover:opacity-80"
+          >
+            <div className="flex justify-center items-center w-7 h-7 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg xs:w-8 xs:h-8">
+              <span className="text-base font-bold text-white xs:text-lg">
+                📝
+              </span>
+            </div>
+            <span className="hidden font-bold text-gray-900 text-mobile-lg xs:text-mobile-xl dark:text-white xs:block">
+              Mood Journal
+            </span>
+            <span className="font-bold text-gray-900 text-mobile-lg dark:text-white xs:hidden">
+              MJ
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-2 min-w-0 xs:space-x-4">
+            <LoadingSpinner size="sm" color="primary" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">
+              확인 중...
+            </span>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>
