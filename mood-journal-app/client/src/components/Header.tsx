@@ -42,15 +42,16 @@ const Header: React.FC = () => {
     const rawCookie = document.cookie
       .split(";")
       .map((c) => c.trim())
-      .find((c) => c.startsWith("display_name="));
+      .find((c) => c.startsWith("user_name="));
     if (!rawCookie) return null;
-    const rawValue = rawCookie.slice("display_name=".length);
+    const rawValue = rawCookie.slice("user_name=".length);
     return safeDecode(rawValue);
   })();
 
   const storedName = safeDecode(localStorage.getItem("user_name"));
 
-  const displayName = authState.user?.name || storedName || cookieName || "";
+  // 인증 상태와 쿠키 정보를 모두 확인하여 사용자 이름 결정
+  const displayName = authState.user?.name || cookieName || storedName || "";
 
   // 모바일 환경에서 사용자 이름을 줄이는 함수
   const getDisplayName = (name: string) => {

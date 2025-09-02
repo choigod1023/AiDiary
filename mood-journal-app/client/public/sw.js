@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -49,14 +49,20 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // API 요청은 캐시하지 않음 (인증 상태 유지를 위해)
-    if (url.pathname.startsWith('/api/') || url.hostname.includes('localhost')) {
+    // API 요청은 완전히 우회 (인증 상태 유지를 위해)
+    if (url.pathname.startsWith('/api/')) {
         event.respondWith(fetch(event.request));
         return;
     }
 
-    // 인증 관련 요청은 캐시하지 않음
+    // 인증 관련 요청은 완전히 우회
     if (url.pathname.includes('auth') || url.pathname.includes('login') || url.pathname.includes('logout')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    // JavaScript 파일은 캐시하지 않음 (인증 상태 유지를 위해)
+    if (url.pathname.endsWith('.js') || url.pathname.includes('assets/')) {
         event.respondWith(fetch(event.request));
         return;
     }
@@ -67,41 +73,53 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // 캐시에서 찾으면 반환
-                if (response) {
-                    return response;
-                }
-
-                // 캐시에 없으면 네트워크에서 가져오기
-                return fetch(event.request).then(
-                    (response) => {
-                        // 유효한 응답이 아니면 그대로 반환
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // HTML 파일과 정적 자산만 캐시
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && (
-                            contentType.includes('text/html') ||
-                            contentType.includes('text/css') ||
-                            contentType.includes('application/javascript') ||
-                            contentType.includes('image/')
-                        )) {
-                            // 응답을 복제하여 캐시에 저장
+    // HTML 파일만 캐시 (정적 콘텐츠)
+    if (url.pathname.endsWith('.html') || url.pathname === '/') {
+        event.respondWith(
+            caches.match(event.request)
+                .then((response) => {
+                    if (response) {
+                        return response;
+                    }
+                    return fetch(event.request).then((response) => {
+                        if (response && response.status === 200 && response.type === 'basic') {
                             const responseToCache = response.clone();
                             caches.open(CACHE_NAME)
                                 .then((cache) => {
                                     cache.put(event.request, responseToCache);
                                 });
                         }
-
                         return response;
+                    });
+                })
+        );
+        return;
+    }
+
+    // CSS, 이미지 등 정적 자산만 캐시
+    event.respondWith(
+        caches.match(event.request)
+            .then((response) => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request).then((response) => {
+                    if (response && response.status === 200 && response.type === 'basic') {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && (
+                            contentType.includes('text/css') ||
+                            contentType.includes('image/') ||
+                            contentType.includes('font/')
+                        )) {
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                        }
                     }
-                );
+                    return response;
+                });
             })
     );
 });

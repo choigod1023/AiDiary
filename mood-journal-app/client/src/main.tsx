@@ -125,13 +125,13 @@ const ServiceWorkerManager = {
     try {
       const cacheNames = await caches.keys();
       await Promise.all(
-        cacheNames.map(cacheName => caches.delete(cacheName))
+        cacheNames.map((cacheName) => caches.delete(cacheName))
       );
       console.log("All caches cleared");
     } catch (error) {
       console.error("Cache clearing failed:", error);
     }
-  }
+  },
 };
 
 // 서비스 워커 등록 (안전한 버전)
