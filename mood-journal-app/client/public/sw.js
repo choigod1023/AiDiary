@@ -1,135 +1,27 @@
-const CACHE_VERSION = 'v7';
+// 최소한의 서비스 워커 (푸시 알림만 지원)
+const CACHE_VERSION = 'v8';
 const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
-const urlsToCache = [
-    '/',
-    '/write',
-    '/list',
-    '/stats',
-    '/static/js/bundle.js',
-    '/static/css/main.css'
-];
 
-// Service Worker 설치
+// Service Worker 설치 (최소화)
 self.addEventListener('install', (event) => {
-    // skipWaiting 제거 - 무한 새로고침 방지
-    // self.skipWaiting();
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
-    );
+    // skipWaiting과 캐시 설치 모두 제거
+    console.log('Service Worker installed (minimal version)');
 });
 
-// Service Worker 활성화
+// Service Worker 활성화 (최소화)
 self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-        // clients.claim 제거 - 무한 새로고침 방지
-        // .then(() => self.clients.claim())
-    );
+    console.log('Service Worker activated (minimal version)');
 });
 
-// 네트워크 요청 가로채기 (오프라인 지원)
+// 네트워크 요청은 완전히 우회 (캐싱 없음)
 self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-
-    // Vite 개발 서버 요청은 캐시하지 않음
-    if (url.pathname.startsWith('/@vite/') || url.pathname.startsWith('/__vite_ping')) {
-        return;
-    }
-
-    // API 요청은 완전히 우회 (인증 상태 유지를 위해)
-    if (url.pathname.startsWith('/api/')) {
-        event.respondWith(fetch(event.request));
-        return;
-    }
-
-    // 인증 관련 요청은 완전히 우회
-    if (url.pathname.includes('auth') || url.pathname.includes('login') || url.pathname.includes('logout')) {
-        event.respondWith(fetch(event.request));
-        return;
-    }
-
-    // JavaScript 파일은 캐시하지 않음 (인증 상태 유지를 위해)
-    if (url.pathname.endsWith('.js') || url.pathname.includes('assets/')) {
-        event.respondWith(fetch(event.request));
-        return;
-    }
-
-    // 동적 콘텐츠는 캐시하지 않음
-    if (url.pathname.includes('.json') || url.pathname.includes('.xml')) {
-        event.respondWith(fetch(event.request));
-        return;
-    }
-
-    // HTML 파일만 캐시 (정적 콘텐츠)
-    if (url.pathname.endsWith('.html') || url.pathname === '/') {
-        event.respondWith(
-            caches.match(event.request)
-                .then((response) => {
-                    if (response) {
-                        return response;
-                    }
-                    return fetch(event.request).then((response) => {
-                        if (response && response.status === 200 && response.type === 'basic') {
-                            const responseToCache = response.clone();
-                            caches.open(CACHE_NAME)
-                                .then((cache) => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                        }
-                        return response;
-                    });
-                })
-        );
-        return;
-    }
-
-    // CSS, 이미지 등 정적 자산만 캐시
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request).then((response) => {
-                    if (response && response.status === 200 && response.type === 'basic') {
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && (
-                            contentType.includes('text/css') ||
-                            contentType.includes('image/') ||
-                            contentType.includes('font/')
-                        )) {
-                            const responseToCache = response.clone();
-                            caches.open(CACHE_NAME)
-                                .then((cache) => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                        }
-                    }
-                    return response;
-                });
-            })
-    );
+    // 모든 요청을 네트워크로 직접 전달
+    event.respondWith(fetch(event.request));
 });
 
 // 메시지 처리 (최소화)
 self.addEventListener('message', (event) => {
-    // skipWaiting 관련 메시지도 제거
-    // if (event.data && event.data.type === 'SKIP_WAITING') {
-    //     self.skipWaiting();
-    // }
+    // 모든 메시지 무시
 });
 
 // 푸시 알림 수신
