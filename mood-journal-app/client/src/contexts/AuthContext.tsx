@@ -37,139 +37,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const checkAuth = async () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
-      console.log("Checking auth...", { userAgent: navigator.userAgent });
 
-      // 안전한 디코딩 함수 (쿠키에서 사용)
-      const safeDecode = (value: string | null): string | null => {
-        if (!value) return null;
-        const replaced = value.replace(/\+/g, " ");
-        try {
-          const once = decodeURIComponent(replaced);
-          if (/%[0-9A-Fa-f]{2}/.test(once)) {
-            try {
-              return decodeURIComponent(once);
-            } catch {
-              return once;
-            }
-          }
-          return once;
-        } catch {
-          return replaced;
-        }
-      };
-
-      // 쿠키에서 사용자 정보 가져오기 (개선된 버전)
+      // 간단한 쿠키 조회 함수 (성능 최적화)
       const getCookie = (name: string): string | null => {
         try {
-          // 모든 쿠키를 로그로 확인
-          console.log(`Getting cookie: ${name}`);
-          console.log(`All cookies: ${document.cookie}`);
-
           const value = document.cookie
             .split(";")
             .map((c) => c.trim())
             .find((c) => c.startsWith(`${name}=`));
 
           if (value) {
-            const decodedValue = safeDecode(value.split("=")[1]);
-            console.log(`Found cookie ${name}:`, decodedValue);
-            return decodedValue;
+            return decodeURIComponent(value.split("=")[1]);
           }
-
-          console.log(`Cookie ${name} not found`);
           return null;
-        } catch (error) {
-          console.warn(`Failed to get cookie ${name}:`, error);
+        } catch {
           return null;
         }
       };
 
       // 쿠키에서 사용자 정보 확인
       const cookieUserName = getCookie("user_name");
-      const cookieUserEmail = getCookie("user_email");
       const cookieUserId = getCookie("user_id");
-      const cookieUserProvider = getCookie("user_provider");
-      const cookieUserAvatar = getCookie("user_avatar");
 
-      console.log("Auth check - cookie data:", {
-        userName: cookieUserName,
-        userEmail: cookieUserEmail,
-        userId: cookieUserId,
-        userProvider: cookieUserProvider,
-        userAvatar: cookieUserAvatar,
-        userAgent: navigator.userAgent,
-        location: window.location.href,
-      });
-
-      // 쿠키에서 사용자 정보가 있으면 인증된 상태로 처리
+      // 쿠키에서 사용자 정보가 있으면 즉시 인증된 상태로 처리
       if (cookieUserName && cookieUserId) {
-        console.log("Using cookie user info for authentication");
-
         const user: User = {
           id: cookieUserId,
-          email: cookieUserEmail || "cookie@example.com",
+          email: getCookie("user_email") || "cookie@example.com",
           name: cookieUserName,
-          avatar: cookieUserAvatar || undefined,
-          provider: (cookieUserProvider as "google" | "naver") || "google",
+          avatar: getCookie("user_avatar") || undefined,
+          provider:
+            (getCookie("user_provider") as "google" | "naver") || "google",
           createdAt: new Date().toISOString(),
         };
 
-        console.log("Cookie user data:", {
-          name: cookieUserName,
-          email: cookieUserEmail,
-          id: cookieUserId,
-          provider: cookieUserProvider,
-          avatar: cookieUserAvatar,
-        });
-
         setAuthState({
           user,
-          token: null, // 쿠키 기반이므로 토큰은 null
+          token: null,
           isAuthenticated: true,
           isLoading: false,
         });
         return; // 쿠키 정보가 있으면 서버 검증 건너뛰기
-      } else {
-        console.log("No cookie user info found, trying server verification");
+      }
 
-        // 쿠키에 사용자 정보가 없으면 서버 검증 시도
-        try {
-          const verified = await authApi.verifyToken();
-          console.log("Auth verification result:", verified);
+      // 쿠키에 사용자 정보가 없을 때만 서버 검증 시도
+      try {
+        const verified = await authApi.verifyToken();
 
-          if (verified.success) {
-            // 프로필 별도 조회
-            const user = await authApi.getProfile();
-            console.log("User profile loaded from server:", user);
-
-            setAuthState({
-              user,
-              token: null,
-              isAuthenticated: true,
-              isLoading: false,
-            });
-            return;
-          } else {
-            console.log("Auth verification failed - no valid session");
-            setAuthState({
-              user: null,
-              token: null,
-              isAuthenticated: false,
-              isLoading: false,
-            });
-          }
-        } catch (error) {
-          console.error("Token verification error:", error);
+        if (verified.success) {
+          const user = await authApi.getProfile();
           setAuthState({
-            user: null,
+            user,
             token: null,
-            isAuthenticated: false,
+            isAuthenticated: true,
             isLoading: false,
           });
+          return;
         }
+      } catch {
+        // 서버 검증 실패 시 조용히 처리
       }
-    } catch (error) {
-      console.error("Auth check error:", error);
+
+      // 인증되지 않은 상태로 설정
+      setAuthState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+    } catch {
       setAuthState({
         user: null,
         token: null,

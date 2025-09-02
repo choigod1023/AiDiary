@@ -15,8 +15,8 @@ const getAuthToken = () => {
 export const api = ky.create({
   prefixUrl: API_BASE_URL,
   credentials: "include",
-  timeout: 30000,
-  retry: { limit: 2, methods: ["get", "post", "put", "delete"] },
+  timeout: 10000, // 타임아웃 단축 (30초 → 10초)
+  retry: { limit: 1, methods: ["get", "post", "put", "delete"] }, // 재시도 횟수 감소
   hooks: {
     beforeRequest: [
       (request) => {
@@ -26,36 +26,34 @@ export const api = ky.create({
           request.headers.set("Authorization", `Bearer ${token}`);
         }
 
-        // 모바일 환경 디버깅을 위한 로그
-        console.log("API Request:", {
-          url: request.url,
-          method: request.method,
-          headers: Object.fromEntries(request.headers.entries()),
-          userAgent: navigator.userAgent,
-        });
+        // 개발 환경에서만 로깅
+        if (import.meta.env.DEV) {
+          console.log("API Request:", {
+            url: request.url,
+            method: request.method,
+          });
+        }
       },
     ],
     afterResponse: [
       (request, _options, response) => {
-        // 응답 로그
-        console.log("API Response:", {
-          url: request.url,
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-        });
+        // 개발 환경에서만 로깅
+        if (import.meta.env.DEV) {
+          console.log("API Response:", {
+            url: request.url,
+            status: response.status,
+          });
+        }
         return response;
       },
     ],
     beforeError: [
       (error) => {
-        // 에러 로그
+        // 에러는 항상 로깅 (디버깅 필요)
         console.error("API Error:", {
           url: error.request?.url,
           status: error.response?.status,
-          statusText: error.response?.statusText,
           message: error.message,
-          userAgent: navigator.userAgent,
         });
         return error;
       },
