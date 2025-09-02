@@ -25,7 +25,26 @@ const queryClient = new QueryClient({
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => void 0);
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        // 서비스 워커 업데이트 확인
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener("statechange", () => {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                // 새로운 서비스 워커가 설치되면 페이지 새로고침
+                window.location.reload();
+              }
+            });
+          }
+        });
+      })
+      .catch(() => void 0);
   });
 }
 

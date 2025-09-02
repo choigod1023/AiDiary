@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -40,9 +40,30 @@ self.addEventListener('activate', (event) => {
 // 네트워크 요청 가로채기 (오프라인 지원)
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+
+    // Vite 개발 서버 요청은 캐시하지 않음
     if (url.pathname.startsWith('/@vite/') || url.pathname.startsWith('/__vite_ping')) {
         return;
     }
+
+    // API 요청은 캐시하지 않음 (인증 상태 유지를 위해)
+    if (url.pathname.startsWith('/api/') || url.hostname.includes('localhost')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    // 인증 관련 요청은 캐시하지 않음
+    if (url.pathname.includes('auth') || url.pathname.includes('login') || url.pathname.includes('logout')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    // 동적 콘텐츠는 캐시하지 않음
+    if (url.pathname.includes('.json') || url.pathname.includes('.xml')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
@@ -59,12 +80,21 @@ self.addEventListener('fetch', (event) => {
                             return response;
                         }
 
-                        // 응답을 복제하여 캐시에 저장
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
+                        // HTML 파일과 정적 자산만 캐시
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && (
+                            contentType.includes('text/html') ||
+                            contentType.includes('text/css') ||
+                            contentType.includes('application/javascript') ||
+                            contentType.includes('image/')
+                        )) {
+                            // 응답을 복제하여 캐시에 저장
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                        }
 
                         return response;
                     }

@@ -102,11 +102,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       // 쿠키에서 사용자 정보가 있으면 인증된 상태로 처리
-      if (cookieUserName) {
+      if (cookieUserName && cookieUserId) {
         console.log("Using cookie user info for authentication");
 
         const user: User = {
-          id: cookieUserId || "cookie_user",
+          id: cookieUserId,
           email: cookieUserEmail || "cookie@example.com",
           name: cookieUserName,
           avatar: cookieUserAvatar || undefined,
@@ -128,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           isAuthenticated: true,
           isLoading: false,
         });
+        return; // 쿠키 정보가 있으면 서버 검증 건너뛰기
       } else {
         console.log("No cookie user info found, trying server verification");
 
