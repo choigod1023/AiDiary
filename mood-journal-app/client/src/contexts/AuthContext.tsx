@@ -81,7 +81,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // 쿠키에 사용자 정보가 없을 때만 서버 검증 시도
-      // 이때는 로딩 상태를 유지하여 사용자에게 피드백 제공
       try {
         const verified = await authApi.verifyToken();
 

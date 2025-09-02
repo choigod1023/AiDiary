@@ -1,0 +1,72 @@
+* [33m53a22b0[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mbackup-before-reset[m[33m)[m Revert back to login loading state
+* [33m3d7855f[m[33m ([m[1;32mbackup-before-login-loading-reset[m[33m)[m header push remove
+* [33m3e7b10f[m push alarm
+* [33m8cd7fd5[m login loading
+* [33md3984ae[m push service
+* [33m0cc51cb[m auth
+* [33m0ad00e1[m cookie
+* [33mc85b7bf[m service worker solving
+* [33m800bbab[m service worker log
+* [33m4353586[m service worker
+* [33mca14051[m service worker
+* [33mfa1f334[m refresh
+* [33me8792fc[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;32mbackup-before-revert[m[33m, [m[1;32mbackup-before-rever[m[33m, [m[1;32mbackup-before-recovery[m[33m)[m token bug
+* [33mc4ca089[m input text black
+* [33maa55aad[m cookie domain
+* [33ma8698ed[m cookie
+* [33m33fb3da[m cookie-parser userName
+* [33m1a5928b[m pwa out
+* [33me2a0890[m pwa exit
+* [33m8bca401[m pwa ser
+* [33mdd60a9b[m localstorage
+* [33m888f910[m auth header
+* [33mc308449[m write text balck
+* [33m65a0081[m mobile resize
+* [33mdac3676[m header
+* [33me5b3163[m header login
+* [33m445eeeb[m origin
+* [33m86cbce7[m network
+* [33mb230350[m refresh login
+* [33mc048d37[m service worker
+* [33mc8895ff[m comment
+* [33m2b67fa0[m route
+* [33m6fd90a9[m vercel.json
+* [33m9a31d4c[m pwa
+* [33m2415089[m vercel route
+* [33m2133b8c[m login
+* [33m0d33b0c[m token detail
+* [33m89ce56f[m vercel product
+* [33mcac6690[m header login fallback
+* [33m9461338[m cors error
+* [33m7065753[m cookie encode
+* [33md2dcd80[m cors
+* [33m4258335[m cookie-parser
+* [33mba9c877[m recovery
+* [33m81939da[m[33m ([m[1;32mbackup-before-ky-restore[m[33m)[m localstorage
+* [33m79a23df[m cors
+* [33m97075f9[m credential
+* [33ma6f4645[m backend import
+* [33m99b7c1f[m google auto
+* [33me9d7589[m type error fix
+* [33mff62d55[m pwa, google login
+[31m|[m *[34m-[m[34m.[m   [33m11ec24a[m[33m ([m[1;35mrefs/stash[m[33m)[m On master: backup-before-type-error-fix
+[31m|[m [31m|[m[33m\[m [34m\[m  
+[31m|[m[31m/[m [33m/[m [34m/[m  
+[31m|[m [33m|[m * [33m3f66a0f[m untracked files on master: c1fdddf ky
+[31m|[m * [33m0f29d1c[m index on master: c1fdddf ky
+[31m|[m[31m/[m  
+* [33mc1fdddf[m[33m ([m[1;32mbackup-before-type-error-fix[m[33m)[m ky
+* [33m5e52a0b[m vercel.json edit
+* [33meeb57cb[m server openai comment
+* [33mea4ea0a[m gpt model edit
+* [33m3ab5a6d[m cors
+* [33m52e0867[m light mode design, ai comment add
+* [33md93cae9[m cors origins
+* [33m6418297[m cors server edit
+* [33m0c88aa1[m cors error
+* [33m43831d6[m client env add
+* [33m6a3c074[m vercel env add
+* [33m728ba19[m vercel env
+* [33m702c9ad[m vercel app
+* [33mba37aac[m Update index.html
+* [33m01436f6[m Initial commit: Full-stack mood journal application
