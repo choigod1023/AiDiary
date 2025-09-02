@@ -1,9 +1,4 @@
-// 서비스 워커 비활성화 (무한 새로고침 문제 해결을 위해)
-// 이 파일은 현재 비활성화되어 있습니다.
-// 필요시 아래 주석을 해제하여 활성화할 수 있습니다.
-
-/*
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -108,20 +103,10 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
+// 메시지 처리 (자동 새로고침 제거)
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
-    }
-
-    // 클라이언트에게 업데이트 알림
-    if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-        self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-                client.postMessage({
-                    type: 'SW_UPDATE_AVAILABLE'
-                });
-            });
-        });
     }
 });
 
@@ -227,4 +212,3 @@ async function sendDataToServer(data) {
 async function clearOfflineData() {
     // IndexedDB 구현은 별도로 필요
 }
-*/

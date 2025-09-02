@@ -84,24 +84,37 @@ const UpdateNotification: React.FC = () => {
   );
 };
 
-// 서비스 워커 비활성화 (무한 새로고침 문제 해결을 위해)
-// if ("serviceWorker" in navigator) {
-//   window.addEventListener("load", () => {
-//     navigator.serviceWorker
-//       .register("/sw.js")
-//       .then((registration) => {
-//         console.log("Service Worker registered successfully");
-//
-//         // 주기적으로 업데이트 확인 (선택사항)
-//         setInterval(() => {
-//           registration.update();
-//         }, 1000 * 60 * 60); // 1시간마다 확인
-//       })
-//       .catch((error) => {
-//         console.error("Service Worker registration failed:", error);
-//       });
-//   });
-// }
+// 서비스 워커 등록 (안전한 버전)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("Service Worker registered successfully");
+
+        // 업데이트 감지 (자동 새로고침 없이)
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener("statechange", () => {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                console.log(
+                  "New service worker installed, but not auto-reloading"
+                );
+                // 자동 새로고침하지 않고 로그만 출력
+              }
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Service Worker registration failed:", error);
+      });
+  });
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
