@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `mood-journal-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -11,7 +11,8 @@ const urlsToCache = [
 
 // Service Worker 설치
 self.addEventListener('install', (event) => {
-    self.skipWaiting();
+    // skipWaiting 제거 - 무한 새로고침 방지
+    // self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -33,7 +34,9 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
-        }).then(() => self.clients.claim())
+        })
+        // clients.claim 제거 - 무한 새로고침 방지
+        // .then(() => self.clients.claim())
     );
 });
 
@@ -103,11 +106,12 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// 메시지 처리 (자동 새로고침 제거)
+// 메시지 처리 (최소화)
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
+    // skipWaiting 관련 메시지도 제거
+    // if (event.data && event.data.type === 'SKIP_WAITING') {
+    //     self.skipWaiting();
+    // }
 });
 
 // 푸시 알림 수신

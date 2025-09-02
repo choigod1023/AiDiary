@@ -84,6 +84,56 @@ const UpdateNotification: React.FC = () => {
   );
 };
 
+// 서비스 워커 관리 유틸리티
+const ServiceWorkerManager = {
+  // 서비스 워커 등록
+  async register() {
+    if (!("serviceWorker" in navigator)) {
+      console.log("Service Worker not supported");
+      return null;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      console.log("Service Worker registered successfully");
+      return registration;
+    } catch (error) {
+      console.error("Service Worker registration failed:", error);
+      return null;
+    }
+  },
+
+  // 기존 서비스 워커 제거 (문제 해결용)
+  async unregister() {
+    if (!("serviceWorker" in navigator)) return;
+
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        await registration.unregister();
+        console.log("Service Worker unregistered");
+      }
+    } catch (error) {
+      console.error("Service Worker unregistration failed:", error);
+    }
+  },
+
+  // 캐시 정리
+  async clearCache() {
+    if (!("caches" in window)) return;
+
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+      );
+      console.log("All caches cleared");
+    } catch (error) {
+      console.error("Cache clearing failed:", error);
+    }
+  }
+};
+
 // 서비스 워커 등록 (안전한 버전)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -115,6 +165,14 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
+
+// 개발자 도구에서 사용할 수 있는 전역 함수들
+(window as any).swManager = ServiceWorkerManager;
+
+// 개발자 도구에서 실행할 수 있는 명령어들:
+// swManager.unregister() - 서비스 워커 제거
+// swManager.clearCache() - 캐시 정리
+// swManager.register() - 서비스 워커 재등록
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
