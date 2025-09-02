@@ -23,35 +23,31 @@ const queryClient = new QueryClient({
   },
 });
 
-// 서비스 워커 업데이트 알림 컴포넌트
+// 간단한 업데이트 알림 컴포넌트 (서비스 워커 없이)
 const UpdateNotification: React.FC = () => {
   const [showUpdate, setShowUpdate] = React.useState(false);
 
   React.useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => {
-          registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener("statechange", () => {
-                if (
-                  newWorker.state === "installed" &&
-                  navigator.serviceWorker.controller
-                ) {
-                  setShowUpdate(true);
-                }
-              });
-            }
-          });
-        })
-        .catch(() => void 0);
+    // 페이지 로드 시간을 체크하여 업데이트 여부 판단
+    const lastLoadTime = localStorage.getItem("lastLoadTime");
+    const currentTime = Date.now();
+
+    if (lastLoadTime) {
+      const timeDiff = currentTime - parseInt(lastLoadTime);
+      // 1시간 이상 지났으면 업데이트 알림 표시
+      if (timeDiff > 60 * 60 * 1000) {
+        setShowUpdate(true);
+      }
     }
+
+    localStorage.setItem("lastLoadTime", currentTime.toString());
   }, []);
 
   const handleUpdate = () => {
-    window.location.reload();
+    // 캐시 무효화를 위한 쿼리 파라미터 추가
+    const url = new URL(window.location.href);
+    url.searchParams.set("v", Date.now().toString());
+    window.location.href = url.toString();
   };
 
   const handleDismiss = () => {
@@ -88,19 +84,24 @@ const UpdateNotification: React.FC = () => {
   );
 };
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        // 주기적으로 업데이트 확인 (선택사항)
-        setInterval(() => {
-          registration.update();
-        }, 1000 * 60 * 60); // 1시간마다 확인
-      })
-      .catch(() => void 0);
-  });
-}
+// 서비스 워커 비활성화 (무한 새로고침 문제 해결을 위해)
+// if ("serviceWorker" in navigator) {
+//   window.addEventListener("load", () => {
+//     navigator.serviceWorker
+//       .register("/sw.js")
+//       .then((registration) => {
+//         console.log("Service Worker registered successfully");
+//
+//         // 주기적으로 업데이트 확인 (선택사항)
+//         setInterval(() => {
+//           registration.update();
+//         }, 1000 * 60 * 60); // 1시간마다 확인
+//       })
+//       .catch((error) => {
+//         console.error("Service Worker registration failed:", error);
+//       });
+//   });
+// }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
