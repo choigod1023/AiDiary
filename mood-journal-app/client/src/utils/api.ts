@@ -2,6 +2,21 @@ import ky from "ky";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+// Mixed content guard (https app -> http api)
+if (typeof window !== "undefined") {
+  try {
+    if (location.protocol === "https:" && API_BASE_URL.startsWith("http://")) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "API over http on https app will be blocked on Safari/modern browsers. Consider using https API URL.",
+        { API_BASE_URL }
+      );
+    }
+  } catch {
+    // no-op
+  }
+}
+
 // 토큰을 가져오는 함수
 const getAuthToken = () => {
   try {
@@ -17,6 +32,13 @@ export const api = ky.create({
   credentials: "include",
   timeout: 10000, // 타임아웃 단축 (30초 → 10초)
   retry: { limit: 1, methods: ["get", "post", "put", "delete"] }, // 재시도 횟수 감소
+  // Safari 호환을 위한 기본 옵션
+  cache: "no-store",
+  referrerPolicy: "strict-origin-when-cross-origin",
+  headers: {
+    Accept: "application/json",
+    "X-Requested-With": "XMLHttpRequest",
+  },
   hooks: {
     beforeRequest: [
       (request) => {

@@ -167,7 +167,8 @@ if ("serviceWorker" in navigator) {
 }
 
 // 개발자 도구에서 사용할 수 있는 전역 함수들
-(window as any).swManager = ServiceWorkerManager;
+(window as { swManager?: typeof ServiceWorkerManager }).swManager =
+  ServiceWorkerManager;
 
 // 개발자 도구에서 실행할 수 있는 명령어들:
 // swManager.unregister() - 서비스 워커 제거

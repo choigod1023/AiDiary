@@ -18,18 +18,14 @@ const AppContent: React.FC = () => {
   if (authState.isLoading) {
     return (
       <div className="flex justify-center items-center w-full h-screen bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner
-          size="lg"
-          color="secondary"
-          text="로그인 상태를 확인중입니다..."
-        />
+        <LoadingSpinner size="lg" color="secondary" text="로딩 중..." />
       </div>
     );
   }
 
   return (
     <Router>
-      <div className="flex flex-col w-full min-h-screen-mobile text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
+      <div className="flex flex-col w-full text-gray-900 bg-gray-50 min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
         <Header />
 
         <div className="flex flex-col flex-1 justify-center items-center sm:px-mobile">
