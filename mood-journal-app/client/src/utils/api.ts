@@ -54,6 +54,7 @@ export const api = ky.create({
           console.log("API Request:", {
             url: request.url,
             method: request.method,
+            prefixUrl: API_BASE_URL,
           });
         }
       },

@@ -51,6 +51,11 @@ app.use((req, res, next) => {
     "http://localhost:5173",
     "http://localhost:3000",
   ];
+
+  // 프록시 요청인지 확인 (Vercel 프록시를 통한 요청)
+  const isProxyRequest =
+    req.headers["x-forwarded-for"] || req.headers["x-vercel-id"];
+
   if (origin && allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Vary", "Origin");
@@ -61,7 +66,18 @@ app.use((req, res, next) => {
     );
     res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
     res.header("Access-Control-Expose-Headers", "Content-Type, Authorization");
+  } else if (isProxyRequest) {
+    // 프록시 요청인 경우 CORS 헤더 설정
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, Content-Type, Authorization, X-Requested-With, Accept"
+    );
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.header("Access-Control-Expose-Headers", "Content-Type, Authorization");
   }
+
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }

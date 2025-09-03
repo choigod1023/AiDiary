@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://ai-diary-server.vercel.app/api/$1"
+    }
+  ]
+}
