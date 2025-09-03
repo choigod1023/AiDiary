@@ -141,6 +141,16 @@ app.use("/api/share", shareRoutes);
 
 // 공개 일기 엔드포인트는 제거되었습니다. 인증된 라우터만 사용합니다.
 
+// 테스트용 헬스체크 엔드포인트 추가
+app.get("/api/health", (req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    message: "Server is running",
+    headers: req.headers,
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
