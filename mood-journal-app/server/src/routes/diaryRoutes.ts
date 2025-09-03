@@ -75,9 +75,10 @@ router.post(
       // 감정 이모지 변환
       const emotionEmoji = await convertEmotionToEmoji(entry);
 
-      // 현재 날짜와 시간을 포맷팅 (월일시분까지)
+      // 현재 날짜와 시간을 포맷팅 (월일시분까지) - 한국 시간대로 설정
       const now = new Date();
       const formattedDate = now.toLocaleString("ko-KR", {
+        timeZone: "Asia/Seoul",
         year: "numeric",
         month: "2-digit",
         day: "2-digit",

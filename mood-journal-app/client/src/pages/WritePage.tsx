@@ -19,6 +19,7 @@ const WritePage: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(() => {
     const now = new Date();
     return now.toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -37,6 +38,7 @@ const WritePage: React.FC = () => {
       const now = new Date();
       setCurrentDateTime(
         now.toLocaleString("ko-KR", {
+          timeZone: "Asia/Seoul",
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
