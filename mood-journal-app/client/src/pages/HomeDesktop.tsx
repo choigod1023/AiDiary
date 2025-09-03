@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { diaryApi } from "../utils/api";
 import type { DiaryEntry } from "../types/diary";
+import { useAuth } from "../contexts/AuthContext";
 
 const emotionToEmoji: Record<string, string> = {
   happy: "😊",
@@ -26,11 +27,20 @@ const capitalize = (s?: string) =>
   s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
 
 const HomeDesktop: React.FC = () => {
+  const { authState } = useAuth();
   const [recent, setRecent] = React.useState<DiaryEntry[] | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     let mounted = true;
+    if (authState.isLoading) return;
+
+    if (!authState.isAuthenticated) {
+      setRecent([]);
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       try {
         const list = await diaryApi.getList();
@@ -39,7 +49,8 @@ const HomeDesktop: React.FC = () => {
           (a, b) => safeTime(b.date) - safeTime(a.date)
         );
         setRecent(sorted.slice(0, 8));
-      } catch {
+      } catch (e) {
+        console.error("Failed to load recent diaries:", e);
         if (mounted) setRecent([]);
       } finally {
         if (mounted) setLoading(false);
@@ -48,7 +59,7 @@ const HomeDesktop: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authState.isAuthenticated, authState.isLoading]);
 
   return (
     <div className="w-full min-h-screen bg-amber-50 dark:bg-gray-900 text-gray-900 dark:text-white px-mobile pt-20">
@@ -100,7 +111,9 @@ const HomeDesktop: React.FC = () => {
             </div>
           ) : (
             <div className="p-5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm ring-1 ring-black/5 dark:ring-white/10 opacity-90">
-              작성된 일기가 없습니다.
+              {authState.isAuthenticated
+                ? "작성된 일기가 없습니다."
+                : "로그인 후 일기를 확인할 수 있습니다."}
             </div>
           )}
           <div className="flex justify-end">

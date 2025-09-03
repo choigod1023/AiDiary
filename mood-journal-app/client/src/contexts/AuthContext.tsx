@@ -32,58 +32,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isLoading: true,
   });
 
-  // 쿠키 기반 인증으로 변경했으므로 localStorage 감지 제거
-
+  // 서버 세션 검증을 우선 사용. Safari 등 교차도메인에서는 JS로 서버 도메인 쿠키를 읽을 수 없음
   const checkAuth = async () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-      // 간단한 쿠키 조회 함수 (성능 최적화)
-      const getCookie = (name: string): string | null => {
-        try {
-          const value = document.cookie
-            .split(";")
-            .map((c) => c.trim())
-            .find((c) => c.startsWith(`${name}=`));
-
-          if (value) {
-            return decodeURIComponent(value.split("=")[1]);
-          }
-          return null;
-        } catch {
-          return null;
-        }
-      };
-
-      // 쿠키에서 사용자 정보 확인
-      const cookieUserName = getCookie("user_name");
-      const cookieUserId = getCookie("user_id");
-
-      // 쿠키에서 사용자 정보가 있으면 즉시 인증된 상태로 처리
-      if (cookieUserName && cookieUserId) {
-        const user: User = {
-          id: cookieUserId,
-          email: getCookie("user_email") || "cookie@example.com",
-          name: cookieUserName,
-          avatar: getCookie("user_avatar") || undefined,
-          provider:
-            (getCookie("user_provider") as "google" | "naver") || "google",
-          createdAt: new Date().toISOString(),
-        };
-
-        setAuthState({
-          user,
-          token: null,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-        return; // 쿠키 정보가 있으면 서버 검증 건너뛰기
-      }
-
-      // 쿠키에 사용자 정보가 없을 때만 서버 검증 시도
+      // 1) 서버 검증 우선
       try {
         const verified = await authApi.verifyToken();
-
         if (verified.success) {
           const user = await authApi.getProfile();
           setAuthState({
@@ -95,10 +51,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           return;
         }
       } catch {
-        // 서버 검증 실패 시 조용히 처리
+        // ignore and try cookie fallback
       }
 
-      // 인증되지 않은 상태로 설정
+      // 2) 쿠키 fallback (동일 도메인에서만 유효)
+      const getCookie = (name: string): string | null => {
+        try {
+          const value = document.cookie
+            .split(";")
+            .map((c) => c.trim())
+            .find((c) => c.startsWith(`${name}=`));
+          return value ? decodeURIComponent(value.split("=")[1]) : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const cookieUserName = getCookie("user_name");
+      const cookieUserId = getCookie("user_id");
+
+      if (cookieUserName && cookieUserId) {
+        const user: User = {
+          id: cookieUserId,
+          email: getCookie("user_email") || "cookie@example.com",
+          name: cookieUserName,
+          avatar: getCookie("user_avatar") || undefined,
+          provider:
+            (getCookie("user_provider") as "google" | "naver") || "google",
+          createdAt: new Date().toISOString(),
+        };
+        setAuthState({
+          user,
+          token: null,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return;
+      }
+
+      // 3) 모두 실패 시 비로그인 처리
       setAuthState({
         user: null,
         token: null,
@@ -119,8 +110,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkAuth();
   }, []);
 
-  // 쿠키 기반 인증으로 변경했으므로 localStorage 백업 제거
-
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
@@ -132,15 +121,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (response.success && response.user) {
         const user = response.user;
-
-        console.log("Login - server response:", {
-          originalName: user.name,
-          originalEmail: user.email,
-          id: user.id,
-          provider: user.provider,
-          hasToken: !!response.token,
-        });
-
         setAuthState({
           user,
           token: response.token || null,

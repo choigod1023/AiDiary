@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { diaryApi } from "../utils/api";
 import type { DiaryEntry } from "../types/diary";
+import { useAuth } from "../contexts/AuthContext";
 
 const safeTime = (iso: string) => {
   const t = Date.parse(iso);
@@ -17,11 +18,21 @@ const capitalize = (s?: string) =>
   s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
 
 const HomeMobile: React.FC = () => {
+  const { authState } = useAuth();
   const [recent, setRecent] = React.useState<DiaryEntry[] | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     let mounted = true;
+    // 대기: 인증 확인 후에만 호출 (Safari에서 쿠키/세션 지연 대응)
+    if (authState.isLoading) return;
+
+    if (!authState.isAuthenticated) {
+      setRecent([]);
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       try {
         const list = await diaryApi.getList();
@@ -30,7 +41,8 @@ const HomeMobile: React.FC = () => {
           (a, b) => safeTime(b.date) - safeTime(a.date)
         );
         setRecent(sorted.slice(0, 3));
-      } catch {
+      } catch (e) {
+        console.error("Failed to load recent diaries:", e);
         if (mounted) setRecent([]);
       } finally {
         if (mounted) setLoading(false);
@@ -39,7 +51,7 @@ const HomeMobile: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authState.isAuthenticated, authState.isLoading]);
 
   return (
     <div className="flex flex-col w-full text-gray-900 bg-amber-50 min-h-screen-mobile dark:bg-gray-900 dark:text-white sm:px-mobile">
@@ -111,7 +123,9 @@ const HomeMobile: React.FC = () => {
           </div>
         ) : (
           <div className="p-4 rounded-lg ring-1 shadow-sm opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
-            작성된 일기가 없습니다.
+            {authState.isAuthenticated
+              ? "작성된 일기가 없습니다."
+              : "로그인 후 일기를 확인할 수 있습니다."}
           </div>
         )}
       </div>
