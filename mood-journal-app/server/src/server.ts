@@ -17,7 +17,7 @@ import {
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./swagger";
 import diaryRoutes from "./routes/diaryRoutes";
-import authRoutes from "./authRoutes";
+import authRoutes from "../src/authRoutes";
 import commentRoutes from "./routes/commentRoutes";
 import emotionRoutes from "./routes/emotionRoutes";
 import aiFeedbackRoutes from "./routes/aiFeedbackRoutes";
@@ -37,6 +37,9 @@ if (!process.env.MONGODB_URI) {
 
 const app = express();
 
+// 프록시 신뢰 (Secure 쿠키 및 req.secure 동작을 위해)
+app.set("trust proxy", 1);
+
 // Preflight/CORS headers (explicit) prior to cors() for reliability on Vercel/edge
 app.use((req, res, next) => {
   const origin = req.headers.origin as string | undefined;
@@ -52,8 +55,12 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Vary", "Origin");
     res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, Content-Type, Authorization, X-Requested-With, Accept"
+    );
     res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.header("Access-Control-Expose-Headers", "Content-Type, Authorization");
   }
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
@@ -92,7 +99,13 @@ const corsOptions = {
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Origin",
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
   credentials: true,
   optionsSuccessStatus: 200,
 };
