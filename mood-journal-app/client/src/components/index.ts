@@ -7,5 +7,4 @@ export { default as LoadingSpinner } from "./LoadingSpinner";
 export { default as LoginModal } from "./LoginModal";
 export { default as Header } from "./Header";
 export { default as EmotionSelector } from "./EmotionSelector";
-export { default as DiaryList } from "./DiaryList";
 export { default as StatsChart } from "./StatsChart";
