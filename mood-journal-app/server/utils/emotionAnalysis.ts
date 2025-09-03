@@ -29,8 +29,10 @@ export interface OverallEmotionStats {
 export async function analyzeEmotion(
   entry: string
 ): Promise<{ [key: string]: number }> {
-  const prompt = `다음 일기 내용에서 감정을 분석해주세요. 각 감정의 비율을 0-100 사이의 숫자로 표현해주세요. 예시: {"행복": 60, "평온": 30, "기대": 10}
-  
+  const prompt = `다음 일기 내용에서 감정을 분석해주세요. 각 감정의 비율을 0-100 사이의 숫자로 표현해주세요. 반드시 유효한 JSON 형식으로만 응답해주세요.
+
+예시 형식: {"행복": 60, "평온": 30, "기대": 10}
+
 일기 내용: ${entry}`;
 
   const response = await openai.chat.completions.create({
@@ -39,7 +41,7 @@ export async function analyzeEmotion(
       {
         role: "system",
         content:
-          "당신은 감정 분석 전문가입니다. 주어진 텍스트에서 감정을 분석하여 각 감정의 비율을 JSON 형식으로 반환해주세요.",
+          "당신은 감정 분석 전문가입니다. 주어진 텍스트에서 감정을 분석하여 각 감정의 비율을 JSON 형식으로만 반환해주세요. 다른 설명이나 텍스트는 포함하지 마세요.",
       },
       {
         role: "user",
@@ -55,7 +57,31 @@ export async function analyzeEmotion(
     throw new Error("No content in response");
   }
 
-  return JSON.parse(content);
+  try {
+    // JSON 파싱 시도
+    return JSON.parse(content);
+  } catch (parseError) {
+    console.error("JSON parsing failed, content:", content);
+    console.error("Parse error:", parseError);
+
+    // JSON 부분만 추출 시도
+    try {
+      const startIndex = content.indexOf("{");
+      const endIndex = content.lastIndexOf("}");
+      if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+        const jsonString = content.substring(startIndex, endIndex + 1);
+        return JSON.parse(jsonString);
+      }
+    } catch (extractError) {
+      console.error("JSON extraction also failed:", extractError);
+    }
+
+    // 모든 시도 실패 시 기본 감정 반환
+    return {
+      중립: 50,
+      기타: 50,
+    };
+  }
 }
 
 export async function analyzeDiaryEntries(
