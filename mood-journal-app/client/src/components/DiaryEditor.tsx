@@ -74,12 +74,15 @@ const DiaryEditor: React.FC<DiaryEditorProps> = ({
         <div className="text-lg text-amber-800 dark:text-stone-200">
           📅 {entry.date}
         </div>
-        <div className="flex flex-col items-end space-y-1">
-          <div className="text-sm font-medium text-amber-700 dark:text-amber-300">
-            오늘의 내 기분
+        {/* 새로운 일기 작성 시에는 기분 선택 부분 숨김 */}
+        {entry.id !== "new" && (
+          <div className="flex flex-col items-end space-y-1">
+            <div className="text-sm font-medium text-amber-700 dark:text-amber-300">
+              오늘의 내 기분
+            </div>
+            <div className="text-2xl">{entry.emotion}</div>
           </div>
-          <div className="text-2xl">{entry.emotion}</div>
-        </div>
+        )}
       </div>
 
       {/* AI 제목 생성 체크박스 */}

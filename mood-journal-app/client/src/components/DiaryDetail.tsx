@@ -15,6 +15,7 @@ interface DiaryDetailProps {
     userId: string;
     aiFeedback?: string;
     useAITitle?: boolean;
+    authorName?: string;
   };
   handleBack: () => void;
   handleDelete: () => void;
@@ -185,9 +186,9 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
   };
 
   return (
-    <div className="p-2 pb-32 m-1 mx-auto w-full max-w-6xl bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md xs:p-4 xs:m-2 text-stone-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 mobile-bottom-spacing">
+    <div className="flex flex-col p-2 pb-32 mx-auto w-full max-w-6xl h-screen bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md xs:mb-24 xs:p-4 xs:m-2 text-stone-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 mobile-bottom-spacing">
       {/* 헤더 - 공통 컨트롤 */}
-      <div className="pb-2 mb-4 border-b xs:pb-4 xs:mb-6 border-amber-700/70 dark:border-gray-700">
+      <div className="flex-shrink-0 pb-2 mb-4 border-b xs:pb-4 xs:mb-6 border-amber-700/70 dark:border-gray-700">
         <div className="flex justify-between items-center h-8 xs:h-12">
           <BackButton onClick={handleBack} />
           {/* 컨트롤 버튼들 - 데스크톱에서만 표시 */}
@@ -260,28 +261,33 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
       </div>
 
       {/* 메인 콘텐츠 - 모드에 따라 다른 컴포넌트 렌더링 */}
-      {isEditing ? (
-        <DiaryEditor
-          entry={entry}
-          editData={editData}
-          onEditDataChange={setEditData}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          isSaving={isSaving}
-        />
-      ) : (
-        <DiaryViewer
-          entry={entry}
-          showAIFeedback={showAIFeedback}
-          aiFeedback={aiFeedback}
-          aiLoading={aiLoading}
-          onAIFeedbackRequest={onAIFeedbackRequest}
-          isOwner={isOwner}
-        />
-      )}
+      <div className="overflow-y-auto flex-1 pb-20 sm:pb-0">
+        {isEditing ? (
+          <DiaryEditor
+            entry={entry}
+            editData={editData}
+            onEditDataChange={setEditData}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            isSaving={isSaving}
+          />
+        ) : (
+          <DiaryViewer
+            entry={{
+              ...entry,
+              authorName: entry.authorName,
+            }}
+            showAIFeedback={showAIFeedback}
+            aiFeedback={aiFeedback}
+            aiLoading={aiLoading}
+            onAIFeedbackRequest={onAIFeedbackRequest}
+            isOwner={isOwner}
+          />
+        )}
+      </div>
 
       {/* ID 표시 */}
-      <div className="text-sm text-right text-stone-600 dark:text-gray-500">
+      <div className="flex-shrink-0 mt-4 text-sm text-right text-stone-600 dark:text-gray-500">
         <p>ID: {entry.id}</p>
       </div>
 

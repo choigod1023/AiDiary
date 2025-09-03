@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { getUserDisplayName } from "../utils/userUtils";
 import { useQueryClient } from "@tanstack/react-query";
 import LoginModal from "./LoginModal";
 
@@ -20,38 +21,8 @@ const Header: React.FC = () => {
     navigate("/");
   };
 
-  const safeDecode = (value: string | null): string | null => {
-    if (!value) return null;
-    const replaced = value.replace(/\+/g, " ");
-    try {
-      const once = decodeURIComponent(replaced);
-      if (/%[0-9A-Fa-f]{2}/.test(once)) {
-        try {
-          return decodeURIComponent(once);
-        } catch {
-          return once;
-        }
-      }
-      return once;
-    } catch {
-      return replaced;
-    }
-  };
-
-  const cookieName = (() => {
-    const rawCookie = document.cookie
-      .split(";")
-      .map((c) => c.trim())
-      .find((c) => c.startsWith("user_name="));
-    if (!rawCookie) return null;
-    const rawValue = rawCookie.slice("user_name=".length);
-    return safeDecode(rawValue);
-  })();
-
-  const storedName = safeDecode(localStorage.getItem("user_name"));
-
   // 인증 상태와 쿠키 정보를 모두 확인하여 사용자 이름 결정
-  const displayName = authState.user?.name || cookieName || storedName || "";
+  const displayName = getUserDisplayName(authState);
 
   // 모바일 환경에서 사용자 이름을 줄이는 함수
   const getDisplayName = (name: string) => {

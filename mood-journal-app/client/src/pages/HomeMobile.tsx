@@ -56,7 +56,7 @@ const HomeMobile: React.FC = () => {
   return (
     <div className="flex flex-col w-full text-gray-900 bg-amber-50 min-h-screen-mobile dark:bg-gray-900 dark:text-white sm:px-mobile">
       {/* CTA gradient card */}
-      <div className="pt-16 pb-6 px-mobile">
+      <div className="pt-8 pb-6 px-mobile">
         <div className="p-5 text-white bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl shadow-md dark:from-blue-500 dark:to-indigo-600">
           <h1 className="font-bold text-mobile-2xl">오늘의 감정 기록하기</h1>
           <p className="mt-1 opacity-90 text-mobile-sm">
@@ -79,7 +79,7 @@ const HomeMobile: React.FC = () => {
           </h2>
           <Link
             to="/list"
-            className="opacity-80 text-mobile-sm hover:opacity-100"
+            className="text-amber-700 opacity-80 text-mobile-sm hover:opacity-100"
           >
             전체 보기 →
           </Link>

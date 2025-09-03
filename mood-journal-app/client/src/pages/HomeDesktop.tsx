@@ -62,32 +62,32 @@ const HomeDesktop: React.FC = () => {
   }, [authState.isAuthenticated, authState.isLoading]);
 
   return (
-    <div className="w-full min-h-screen bg-amber-50 dark:bg-gray-900 text-gray-900 dark:text-white px-mobile pt-20">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-screen-xl mx-auto">
+    <div className="pt-20 w-full min-h-screen text-gray-900 bg-amber-50 dark:bg-gray-900 dark:text-white px-mobile">
+      <div className="grid grid-cols-1 gap-6 mx-auto max-w-screen-xl lg:grid-cols-12">
         {/* Left: recent entries */}
-        <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="space-y-4 lg:col-span-8">
+          <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">최근 일기</h2>
             <Link
               to="/list"
-              className="text-sm font-medium opacity-80 hover:opacity-100"
+              className="text-sm font-medium text-amber-700 opacity-80 hover:opacity-100"
             >
               전체 보기 →
             </Link>
           </div>
           {loading ? (
-            <div className="p-5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm ring-1 ring-black/5 dark:ring-white/10 opacity-90">
+            <div className="p-5 rounded-lg ring-1 shadow-sm opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
               불러오는 중...
             </div>
           ) : recent && recent.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {recent.map((e) => (
                 <Link
                   key={e.id}
                   to={`/detail/${e.id}`}
-                  className="p-4 rounded-lg bg-white/90 dark:bg-gray-800/90 ring-1 ring-black/5 dark:ring-white/10 shadow-sm h-28 flex items-center justify-between group hover:shadow-md transition-shadow"
+                  className="flex justify-between items-center p-4 h-28 rounded-lg ring-1 shadow-sm transition-shadow bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10 group hover:shadow-md"
                 >
-                  <div className="min-w-0 pr-3 flex-1">
+                  <div className="flex-1 pr-3 min-w-0">
                     <div className="font-semibold truncate text-stone-900 dark:text-white group-hover:underline">
                       {e.title || "제목 없음"}
                     </div>
@@ -103,48 +103,40 @@ const HomeDesktop: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <div className="shrink-0 w-12 h-12 rounded-full bg-amber-50 dark:bg-gray-700 flex items-center justify-center text-3xl">
+                  <div className="flex justify-center items-center w-12 h-12 text-3xl bg-amber-50 rounded-full shrink-0 dark:bg-gray-700">
                     {emotionToEmoji[e.emotion] || e.emotion || "📝"}
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="p-5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm ring-1 ring-black/5 dark:ring-white/10 opacity-90">
+            <div className="p-5 rounded-lg ring-1 shadow-sm opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
               {authState.isAuthenticated
                 ? "작성된 일기가 없습니다."
                 : "로그인 후 일기를 확인할 수 있습니다."}
             </div>
           )}
-          <div className="flex justify-end">
-            <Link
-              to="/list"
-              className="text-sm font-medium opacity-80 hover:opacity-100"
-            >
-              전체 보기 →
-            </Link>
-          </div>
         </div>
 
         {/* Right: CTA + stats */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="p-5 rounded-2xl shadow-md bg-gradient-to-br from-amber-400 to-yellow-500 dark:from-blue-500 dark:to-indigo-600 text-white">
+        <div className="mt-12 space-y-4 lg:col-span-4">
+          <div className="p-5 text-white bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl shadow-md dark:from-blue-500 dark:to-indigo-600">
             <h3 className="text-xl font-semibold">오늘의 감정 기록</h3>
             <p className="mt-1 text-sm opacity-90">
               간단히 오늘의 감정을 남겨보세요.
             </p>
             <Link
               to="/write"
-              className="mt-4 inline-flex justify-center items-center px-4 py-2 rounded-lg bg-white text-amber-600 dark:text-blue-600 font-semibold hover:bg-white/90 transition-colors"
+              className="inline-flex justify-center items-center px-4 py-2 mt-4 font-semibold text-amber-600 bg-white rounded-lg transition-colors dark:text-blue-600 hover:bg-white/90"
             >
               ✍️ 새 일기 작성
             </Link>
           </div>
 
-          <div className="p-5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm ring-1 ring-black/5 dark:ring-white/10 h-40 flex items-center justify-center opacity-90">
+          <div className="flex justify-center items-center p-5 h-40 rounded-lg ring-1 shadow-sm opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
             <span className="text-sm">주간 감정 차트</span>
           </div>
-          <div className="p-5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm ring-1 ring-black/5 dark:ring-white/10 h-40 flex items-center justify-center opacity-90">
+          <div className="flex justify-center items-center p-5 h-40 rounded-lg ring-1 shadow-sm opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
             <span className="text-sm">월간 감정 차트</span>
           </div>
         </div>

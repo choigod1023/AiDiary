@@ -200,11 +200,16 @@ router.get(
 
       // 작성자 정보 조회하여 이름 추가
       try {
-        const author = await UserModel.findById(userId);
-        const entriesWithAuthor = entries.map((entry) => ({
-          ...entry.toObject(),
-          authorName: author?.name || "알 수 없음",
-        }));
+        // 각 일기별로 작성자 정보 조회
+        const entriesWithAuthor = await Promise.all(
+          entries.map(async (entry) => {
+            const author = await UserModel.findById(entry.userId);
+            return {
+              ...entry.toObject(),
+              authorName: author?.name || entry.authorName || "알 수 없음",
+            };
+          })
+        );
 
         res.json({
           entries: entriesWithAuthor,
@@ -356,13 +361,21 @@ router.get("/:id", async (req: Request, res: Response) => {
         };
         res.json(entryWithAuthor);
       } else {
-        // 작성자 정보를 찾을 수 없는 경우 기본 정보만 반환
-        res.json(entry);
+        // 작성자 정보를 찾을 수 없는 경우 기존 authorName 필드 사용
+        const entryWithAuthor = {
+          ...entry.toObject(),
+          authorName: entry.authorName || "알 수 없음",
+        };
+        res.json(entryWithAuthor);
       }
     } catch (userError) {
       console.error("Error fetching author info:", userError);
-      // 사용자 정보 조회 실패 시 기본 정보만 반환
-      res.json(entry);
+      // 사용자 정보 조회 실패 시 기존 authorName 필드 사용
+      const entryWithAuthor = {
+        ...entry.toObject(),
+        authorName: entry.authorName || "알 수 없음",
+      };
+      res.json(entryWithAuthor);
     }
   } catch (error) {
     console.error("Error fetching diary entry:", error);

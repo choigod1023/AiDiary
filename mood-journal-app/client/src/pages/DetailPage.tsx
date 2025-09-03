@@ -5,7 +5,6 @@ import { diaryApi } from "../utils/api";
 import DiaryDetail from "../components/DiaryDetail";
 import { DiaryEntry } from "../types/diary";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { useAuth } from "../contexts/AuthContext";
 
 const DetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +16,6 @@ const DetailPage: React.FC = () => {
   const [showAIFeedback, setShowAIFeedback] = useState<boolean>(false);
   const [aiFeedback, setAIFeedback] = useState<string>("");
   const [aiLoading, setAILoading] = useState<boolean>(false);
-  const { authState } = useAuth();
 
   // React Query를 사용한 일기 조회
   const {
@@ -221,7 +219,8 @@ const DetailPage: React.FC = () => {
             visibility:
               ("visibility" in entry && entry.visibility) || "private",
             shareToken: "shareToken" in entry ? entry.shareToken : undefined,
-            userId: authState.user?.name || "익명",
+            userId: entry.authorName || entry.userId || "익명",
+            authorName: entry.authorName,
           }}
           handleBack={handleBack}
           handleDelete={handleDelete}
