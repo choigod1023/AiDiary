@@ -81,5 +81,12 @@ export default defineConfig({
       "ai-diary-server.vercel.app",
       "localhost:5173",
     ],
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 });

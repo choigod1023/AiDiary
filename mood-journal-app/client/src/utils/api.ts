@@ -1,6 +1,7 @@
 import ky from "ky";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// Use relative base to leverage frontend proxy (Vercel rewrites / Vite proxy)
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 // Mixed content guard (https app -> http api)
 if (typeof window !== "undefined") {
