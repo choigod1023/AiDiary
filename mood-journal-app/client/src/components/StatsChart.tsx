@@ -94,14 +94,18 @@ const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
       setIsDark(byClass || (mq ? mq.matches : false));
     };
     update();
-    mq && mq.addEventListener && mq.addEventListener("change", update);
+    if (mq && mq.addEventListener) {
+      mq.addEventListener("change", update);
+    }
     const obs = new MutationObserver(update);
     obs.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
     return () => {
-      mq && mq.removeEventListener && mq.removeEventListener("change", update);
+      if (mq && mq.removeEventListener) {
+        mq.removeEventListener("change", update);
+      }
       obs.disconnect();
     };
   }, []);
