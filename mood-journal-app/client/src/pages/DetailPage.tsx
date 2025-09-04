@@ -142,6 +142,7 @@ const DetailPage: React.FC = () => {
 
   if (error) {
     // 권한 에러인지 확인
+    alert(error.message);
     const isAccessDenied =
       error instanceof Error &&
       (error.message.includes("Access denied") ||

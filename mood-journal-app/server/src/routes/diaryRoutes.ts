@@ -8,7 +8,11 @@ import {
 } from "../../utils/summaryUtils";
 import { generateShareToken } from "../../utils/shareUtils";
 import { saveEmotionAnalysis } from "../../utils/emotionAnalysis";
-import { authenticateToken, AuthenticatedRequest } from "../../middleware/auth";
+import {
+  authenticateToken,
+  AuthenticatedRequest,
+  optionalAuth,
+} from "../../middleware/auth";
 
 const router = express.Router();
 
@@ -264,7 +268,7 @@ router.get(
  *         description: 서버 오류
  */
 // 특정 ID의 일기 조회 API (권한 검증 포함)
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/:id", optionalAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { token } = req.query; // URL 쿼리에서 토큰 확인
@@ -320,7 +324,16 @@ router.get("/:id", async (req: Request, res: Response) => {
       hasAccess = true;
     }
 
-    // 3. 토큰이 없지만 Authorization 헤더로 인증된 사용자인 경우 확인
+    // 3-A. 미들웨어로 인증된 사용자 쿠키/헤더가 있는 경우 (선호)
+    const mwUserId = (req as any).user?.id as string | undefined;
+    if (!hasAccess && mwUserId) {
+      currentUserId = mwUserId;
+      if (currentUserId === entry.userId) {
+        hasAccess = true;
+      }
+    }
+
+    // 3-B. 토큰이 없지만 Authorization 헤더만 수동 확인 (레거시 호환)
     if (!hasAccess && !token) {
       try {
         const authHeader = req.headers.authorization;
