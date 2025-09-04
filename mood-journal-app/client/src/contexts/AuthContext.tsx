@@ -121,6 +121,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (response.success && response.user) {
         const user = response.user;
+        // 로컬 저장소에 토큰 저장하여 모바일/쿠키 미포함 상황에서도 Authorization 헤더로 인증
+        try {
+          if (response.token)
+            localStorage.setItem("auth_token", response.token);
+        } catch {}
+
         setAuthState({
           user,
           token: response.token || null,
@@ -138,6 +144,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = async () => {
     await authApi.logout().catch(() => undefined);
+    try {
+      localStorage.removeItem("auth_token");
+    } catch {}
     setAuthState({
       user: null,
       token: null,
