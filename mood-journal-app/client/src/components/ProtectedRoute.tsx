@@ -11,7 +11,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   const token = search.get("token");
   const isDetailShare = location.pathname.startsWith("/detail/");
 
-  if (authState.isLoading) return null;
+  // 로딩 중에는 리다이렉트하지 않고 로딩 상태만 표시
+  if (authState.isLoading) {
+    return (
+      <div className="flex justify-center items-center py-16 text-gray-500">
+        Loading...
+      </div>
+    );
+  }
 
   // 공유 링크로 접근 허용: 상세 페이지에서 토큰이 있을 때만 예외 허용
   if (!authState.isAuthenticated && !(isDetailShare && token)) {

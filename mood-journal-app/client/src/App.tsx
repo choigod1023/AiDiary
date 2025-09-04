@@ -10,6 +10,7 @@ import "./App.css";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
+import LoginCallback from "./pages/LoginCallback";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 const AppContent: React.FC = () => {
@@ -32,6 +33,7 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/login/callback" element={<LoginCallback />} />
             <Route
               path="/write"
               element={
