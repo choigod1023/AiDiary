@@ -40,23 +40,34 @@ const app = express();
 // 프록시 신뢰 (Secure 쿠키 및 req.secure 동작을 위해)
 app.set("trust proxy", 1);
 
+// 공통 허용 Origin 구성 (환경변수로 확장 가능)
+const defaultAllowedOrigins = [
+  "https://ai-diary-eight-drab.vercel.app",
+  "https://ai-diary-server.vercel.app",
+  "https://choigod1023.p-e.kr",
+  "http://choigod1023.p-e.kr",
+  "http://choigod1023.p-e.kr:5173",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:5000",
+];
+const extraOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const allowedOriginsAll = Array.from(
+  new Set([...defaultAllowedOrigins, ...extraOrigins])
+);
+
 // Preflight/CORS headers (explicit) prior to cors() for reliability on Vercel/edge
 app.use((req, res, next) => {
   const origin = req.headers.origin as string | undefined;
-  const allowedOrigins = [
-    "https://ai-diary-eight-drab.vercel.app",
-    "https://choigod1023.p-e.kr",
-    "http://choigod1023.p-e.kr",
-    "http://choigod1023.p-e.kr:5173",
-    "http://localhost:5173",
-    "http://localhost:3000",
-  ];
 
   // 프록시 요청인지 확인 (Vercel 프록시를 통한 요청)
   const isProxyRequest =
     req.headers["x-forwarded-for"] || req.headers["x-vercel-id"];
 
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && allowedOriginsAll.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Vary", "Origin");
     res.header("Access-Control-Allow-Credentials", "true");
@@ -85,16 +96,7 @@ app.use((req, res, next) => {
 });
 
 // CORS 설정
-const allowedOrigins = [
-  "https://ai-diary-eight-drab.vercel.app",
-  "https://ai-diary-server.vercel.app",
-  "https://choigod1023.p-e.kr",
-  "http://choigod1023.p-e.kr",
-  "http://choigod1023.p-e.kr:5173",
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://localhost:5000",
-];
+const allowedOrigins = allowedOriginsAll;
 
 const corsOptions = {
   origin: function (
