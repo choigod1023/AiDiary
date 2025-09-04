@@ -8,3 +8,4 @@ export { default as LoginModal } from "./LoginModal";
 export { default as Header } from "./Header";
 export { default as EmotionSelector } from "./EmotionSelector";
 export { default as StatsChart } from "./StatsChart";
+export { default as EmotionChart } from "./EmotionChart";

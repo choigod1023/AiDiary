@@ -40,7 +40,7 @@ const Header: React.FC = () => {
             onClick={handleLogoClick}
             className="flex flex-shrink-0 items-center space-x-2 transition-opacity cursor-pointer hover:opacity-80"
           >
-            <div className="flex justify-center items-center w-7 h-7 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg xs:w-8 xs:h-8">
+            <div className="flex justify-center items-center w-7 h-7 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg xs:w-8 xs:h-8 dark:from-blue-500 dark:to-indigo-600">
               <span className="text-base font-bold text-white xs:text-lg">
                 📝
               </span>

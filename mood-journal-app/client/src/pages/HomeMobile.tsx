@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { diaryApi } from "../utils/api";
 import type { DiaryEntry } from "../types/diary";
 import { useAuth } from "../contexts/AuthContext";
+import { EmotionChart } from "../components";
 
 const safeTime = (iso: string) => {
   const t = Date.parse(iso);
@@ -21,6 +22,12 @@ const HomeMobile: React.FC = () => {
   const { authState } = useAuth();
   const [recent, setRecent] = React.useState<DiaryEntry[] | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [emotionStats, setEmotionStats] = React.useState<{
+    totalEntries: number;
+    averageEmotions: { [key: string]: number };
+    emotionTrends: { date: string; emotions: { [key: string]: number } }[];
+  } | null>(null);
+  const [statsLoading, setStatsLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     let mounted = true;
@@ -30,22 +37,36 @@ const HomeMobile: React.FC = () => {
     if (!authState.isAuthenticated) {
       setRecent([]);
       setLoading(false);
+      setEmotionStats(null);
+      setStatsLoading(false);
       return;
     }
 
     (async () => {
       try {
-        const list = await diaryApi.getList();
+        const [list, stats] = await Promise.all([
+          diaryApi.getList(),
+          diaryApi.getEmotionStats(),
+        ]);
+
         if (!mounted) return;
+
         const sorted = [...list].sort(
           (a, b) => safeTime(b.date) - safeTime(a.date)
         );
         setRecent(sorted.slice(0, 3));
+        setEmotionStats(stats);
       } catch (e) {
-        console.error("Failed to load recent diaries:", e);
-        if (mounted) setRecent([]);
+        console.error("Failed to load data:", e);
+        if (mounted) {
+          setRecent([]);
+          setEmotionStats(null);
+        }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+          setStatsLoading(false);
+        }
       }
     })();
     return () => {
@@ -79,7 +100,7 @@ const HomeMobile: React.FC = () => {
           </h2>
           <Link
             to="/list"
-            className="text-amber-700 opacity-80 text-mobile-sm hover:opacity-100"
+            className="text-amber-700 opacity-80 dark:text-blue-400 text-mobile-sm hover:opacity-100"
           >
             전체 보기 →
           </Link>
@@ -135,9 +156,17 @@ const HomeMobile: React.FC = () => {
         <h2 className="mb-2 font-semibold text-mobile-xl">
           주간 감정 미리보기
         </h2>
-        <div className="flex justify-center items-center h-24 rounded-lg ring-1 opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
-          <span className="text-mobile-sm">차트 미리보기</span>
-        </div>
+        {statsLoading ? (
+          <div className="flex justify-center items-center h-32 rounded-lg ring-1 opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
+            <span className="text-mobile-sm">차트 로딩 중...</span>
+          </div>
+        ) : emotionStats ? (
+          <EmotionChart data={emotionStats} type="weekly" className="h-50" />
+        ) : (
+          <div className="flex justify-center items-center h-32 rounded-lg ring-1 opacity-90 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">
+            <span className="text-mobile-sm">차트 미리보기</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -81,7 +81,7 @@ const WritePage: React.FC = () => {
   if (authState.isLoading) {
     return (
       <div className="flex flex-1 justify-center items-center p-8 w-full bg-amber-50 h-min-screen dark:bg-gray-900">
-        <div className="max-w-8xl w-[70vw] mx-auto rounded-2xl p-8 border-2 border-amber-800 shadow-md bg-amber-200 text-gray-900 dark:bg-gray-800 dark:text-white">
+        <div className="max-w-8xl w-[100vw] mx-auto rounded-2xl p-8 border-2 border-amber-800 shadow-md bg-amber-200 text-gray-900 dark:bg-gray-800 dark:text-white">
           <div className="flex justify-center items-center py-16">
             <LoadingSpinner size="lg" text="인증 상태를 확인하는 중..." />
           </div>
@@ -102,18 +102,29 @@ const WritePage: React.FC = () => {
       return;
     }
 
-    saveMutation.mutate({
+    const payload: {
+      entry: string;
+      visibility?: "private" | "shared";
+      title?: string;
+      useAITitle?: boolean;
+      authorName?: string;
+    } = {
       entry: editData.entry,
       visibility: editData.visibility,
-      title: editData.title,
-      useAITitle: !editData.title,
+      useAITitle: editData.useAITitle,
       authorName: getUserDisplayName(authState),
-    });
+    };
+
+    if (!editData.useAITitle) {
+      payload.title = editData.title;
+    }
+
+    saveMutation.mutate(payload);
   };
 
   return (
     <div className="flex flex-1 justify-center items-center p-4 w-full bg-amber-50 md:p-8 h-min-screen dark:bg-gray-900">
-      <div className="p-4 mx-auto w-full text-gray-900 bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md max-w-8xl md:p-8 dark:bg-gray-800 dark:text-white">
+      <div className="p-4 mx-auto w-full text-gray-900 bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md dark:border-gray-700 max-w-8xl md:p-8 dark:bg-gray-800 dark:text-white">
         <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => navigate(-1)}

@@ -207,7 +207,7 @@ const DetailPage: React.FC = () => {
 
   return (
     <div className="flex flex-col justify-center items-center w-full min-h-screen text-gray-900 bg-amber-50 min-w-screen dark:bg-gray-900 dark:text-white">
-      <div className="px-6 w-full max-w-6xl">
+      <div className="w-full max-w-6xl">
         <DiaryDetail
           entry={{
             id: entry.id,

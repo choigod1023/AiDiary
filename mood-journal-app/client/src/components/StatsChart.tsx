@@ -7,10 +7,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  ArcElement,
 } from "chart.js";
-import { Bar, Doughnut } from "react-chartjs-2";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+import { Bar } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -18,9 +16,7 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend,
-  ArcElement,
-  ChartDataLabels
+  Legend
 );
 
 interface EmotionMix {
@@ -35,157 +31,161 @@ interface StatsChartProps {
 }
 
 const StatsChart: React.FC<StatsChartProps> = ({ emotionData }) => {
+  // 날짜 오름차순 정렬 (이전 → 최근)
+  const sortedData = [...emotionData].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
   // 모든 고유 감정 목록 추출
   const allEmotions = Array.from(
-    new Set(emotionData.flatMap((entry) => Object.keys(entry.emotions)))
+    new Set(sortedData.flatMap((entry) => Object.keys(entry.emotions)))
   );
 
   // 평균 감정 비율 계산
   const averageEmotions = allEmotions.reduce((acc, emotion) => {
-    const sum = emotionData.reduce(
+    const sum = sortedData.reduce(
       (sum, entry) => sum + (entry.emotions[emotion] || 0),
       0
     );
-    acc[emotion] = sum / emotionData.length;
+    acc[emotion] = sum / Math.max(1, sortedData.length);
     return acc;
   }, {} as { [key: string]: number });
 
-  // 도넛 차트 데이터
-  const doughnutChartData = {
-    labels: allEmotions,
-    datasets: [
-      {
-        data: allEmotions.map((emotion) => averageEmotions[emotion]),
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.8)",
-          "rgba(54, 162, 235, 0.8)",
-          "rgba(255, 206, 86, 0.8)",
-          "rgba(75, 192, 192, 0.8)",
-          "rgba(153, 102, 255, 0.8)",
-          "rgba(255, 159, 64, 0.8)",
-        ],
-        borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+  // 상위 5개 감정만 사용
+  const topEmotions = Object.entries(averageEmotions)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([emotion]) => emotion);
 
-  // 스택 바 차트 데이터
+  // 고정 팔레트 (상위 5개 전용, 모두 다른 색)
+  const palette = [
+    "#ff6b6b", // red
+    "#4dabf7", // blue
+    "#ffd43b", // yellow
+    "#69db7c", // green
+    "#b197fc", // purple
+  ];
+
+  // 스택 바 차트 데이터 (상위 5개 감정만)
   const stackedBarData = {
-    labels: emotionData.map((entry) => entry.date),
-    datasets: allEmotions.map((emotion, index) => ({
+    labels: sortedData.map((entry) => entry.date),
+    datasets: topEmotions.map((emotion, index) => ({
       label: emotion,
-      data: emotionData.map((entry) => entry.emotions[emotion] || 0),
-      backgroundColor: [
-        "rgba(255, 99, 132, 0.6)",
-        "rgba(54, 162, 235, 0.6)",
-        "rgba(255, 206, 86, 0.6)",
-        "rgba(75, 192, 192, 0.6)",
-        "rgba(153, 102, 255, 0.6)",
-        "rgba(255, 159, 64, 0.6)",
-      ][index % 6],
-      borderColor: [
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-        "rgba(255, 159, 64, 1)",
-      ][index % 6],
+      data: sortedData.map((entry) => entry.emotions[emotion] || 0),
+      backgroundColor: palette[index % palette.length] + "99", // 60% alpha
+      borderColor: palette[index % palette.length],
       borderWidth: 1,
     })),
   };
 
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "right" as const,
-        labels: {
-          color: "#1f2937", // stone-800 for light
-          font: { size: 14 },
-          padding: 20,
-        },
-      },
-      title: {
-        display: true,
-        text: "평균 감정 비율",
-        color: "#1f2937",
-        font: { size: 18, weight: "bold" as const },
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context: unknown) {
-            const ctx = context as { label?: string; raw?: number };
-            const label = ctx.label || "";
-            const value = ctx.raw || 0;
-            return `${label}: ${value.toFixed(1)}%`;
-          },
-        },
-      },
-      datalabels: {
-        color: "#1f2937",
-        font: { size: 14, weight: "bold" as const },
-        formatter: (value: number) => `${value.toFixed(1)}%`,
-      },
-    },
-  };
+  // 도넛 옵션 제거 (중복 시각화 제거)
+
+  // 다크 모드 동기화: class 변경이나 시스템 테마 변경 시 반영
+  const [isDark, setIsDark] = React.useState(
+    () =>
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark")
+  );
+  React.useEffect(() => {
+    const mq =
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => {
+      const byClass = document.documentElement.classList.contains("dark");
+      setIsDark(byClass || (mq ? mq.matches : false));
+    };
+    update();
+    mq && mq.addEventListener && mq.addEventListener("change", update);
+    const obs = new MutationObserver(update);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => {
+      mq && mq.removeEventListener && mq.removeEventListener("change", update);
+      obs.disconnect();
+    };
+  }, []);
+  const axisColor = isDark ? "#e5e7eb" : "#1f2937"; // gray-200 / gray-800
+  const gridColor = isDark ? "rgba(229,231,235,0.15)" : "rgba(31,41,55,0.1)";
 
   const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
-        labels: { color: "#1f2937", font: { size: 14 }, padding: 20 },
+        display: false,
       },
       title: {
-        display: true,
-        text: "감정 비율 변화",
-        color: "#1f2937",
-        font: { size: 18, weight: "bold" as const },
+        display: false,
       },
     },
     scales: {
       x: {
         stacked: true,
-        grid: { color: "rgba(31, 41, 55, 0.1)" },
-        ticks: { color: "#1f2937", font: { size: 12 } },
+        grid: { color: gridColor },
+        ticks: { color: axisColor, font: { size: 12 } },
       },
       y: {
         stacked: true,
         beginAtZero: true,
         max: 100,
         ticks: {
-          color: "#1f2937",
+          color: axisColor,
           font: { size: 12 },
           callback: function (value: string | number) {
             return `${value}%`;
           },
         },
-        grid: { color: "rgba(31, 41, 55, 0.1)" },
+        grid: { color: gridColor },
       },
     },
   };
 
+  // 가로 스크롤 컨테이너: 최근 데이터가 오른쪽에 위치 → 초기 스크롤을 오른쪽 끝으로 이동
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollLeft = el.scrollWidth;
+    }
+  }, [sortedData.length]);
+
+  // 차트 너비: 데이터 길이에 비례하여 확대 (가로 스크롤 유도)
+  const chartWidth = Math.max(900, sortedData.length * 64);
+
   return (
     <div className="flex flex-col gap-12 w-full">
-      <div className="w-full bg-white border border-amber-200 p-8 rounded-xl shadow-sm h-[600px] flex justify-center items-center dark:bg-gray-800 dark:border-gray-700">
-        <div className="w-full h-full">
-          <Doughnut data={doughnutChartData} options={doughnutOptions} />
-        </div>
-      </div>
       <div className="w-full bg-white border border-amber-200 p-8 rounded-xl shadow-sm h-[700px] dark:bg-gray-800 dark:border-gray-700">
-        <div className="w-full h-full">
-          <Bar data={stackedBarData} options={barOptions} />
+        {/* 고정 제목 + 커스텀 범례 (가로 스크롤 영역 밖) */}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
+            감정 비율 변화
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {topEmotions.map((emotion, index) => (
+              <div key={emotion} className="flex gap-2 items-center text-sm">
+                <span
+                  className="inline-block w-3 h-3 rounded-sm"
+                  style={{ backgroundColor: palette[index % palette.length] }}
+                />
+                <span className="text-stone-700 dark:text-stone-200">
+                  {emotion}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto w-full h-[calc(100%-2rem)]"
+        >
+          <div style={{ width: chartWidth, height: "100%" }}>
+            <Bar
+              key={`stacked-${isDark ? "dark" : "light"}`}
+              data={stackedBarData}
+              options={barOptions}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -35,7 +35,7 @@ export async function convertEmotionToEmoji(entry: string): Promise<string> {
       {
         role: "system",
         content:
-          "당신은 텍스트의 감정을 분석하고 적절한 이모지를 반환하는 전문가입니다. 감정에 대한 이모지만 반환하세요.",
+          "당신은 텍스트의 감정을 분석하고 적절한 이모지를 반환하는 전문가입니다. 감정에 대한 이모지만 반환하세요. 1~2개만 반환하세요.",
       },
       {
         role: "user",

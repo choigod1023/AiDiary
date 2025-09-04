@@ -186,7 +186,7 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
   };
 
   return (
-    <div className="flex flex-col p-2 pb-32 mx-auto w-full max-w-6xl h-screen bg-amber-200 rounded-2xl border-2 border-amber-800 shadow-md xs:mb-24 xs:p-4 xs:m-2 text-stone-900 dark:bg-gray-800 dark:text-white dark:border-gray-700 mobile-bottom-spacing">
+    <div className="flex flex-col pt-4 pb-5 w-full min-h-screen px-mobile xs:mb-6 text-stone-900 dark:text-white mobile-bottom-spacing">
       {/* 헤더 - 공통 컨트롤 */}
       <div className="flex-shrink-0 pb-2 mb-4 border-b xs:pb-4 xs:mb-6 border-amber-700/70 dark:border-gray-700">
         <div className="flex justify-between items-center h-8 xs:h-12">
@@ -261,7 +261,7 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
       </div>
 
       {/* 메인 콘텐츠 - 모드에 따라 다른 컴포넌트 렌더링 */}
-      <div className="overflow-y-auto flex-1 pb-20 sm:pb-0">
+      <div className="flex-1 pb-2">
         {isEditing ? (
           <DiaryEditor
             entry={entry}

@@ -25,7 +25,7 @@ const AppContent: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex flex-col w-full text-gray-900 bg-gray-50 min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
+      <div className="flex flex-col p-0 w-full text-gray-900 bg-gray-50 min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
         <Header />
 
         <div className="flex flex-col flex-1 justify-center items-center sm:px-mobile">

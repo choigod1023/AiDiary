@@ -138,9 +138,77 @@ const StatsPage: React.FC = () => {
     ))
     .otherwise(({ stats }) => {
       if (!stats) return null;
+      // 파생 통계 계산
+      const emotionLabelMap: Record<string, string> = {
+        happy: "행복",
+        sad: "슬픔",
+        angry: "화남",
+        neutral: "보통",
+        surprised: "놀람",
+        fear: "두려움",
+        disgust: "혐오",
+      };
+
+      const sortedTrends = [...stats.emotionTrends].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      const totalsByDay = sortedTrends.map((d) =>
+        Object.values(d.emotions || {}).reduce(
+          (acc, v) => acc + (typeof v === "number" ? v : 0),
+          0
+        )
+      );
+
+      const sumLastN = (n: number) =>
+        (totalsByDay.length > 0 ? totalsByDay.slice(-n) : []).reduce(
+          (a, b) => a + b,
+          0
+        );
+
+      const weeklyEntries = sumLastN(7);
+      const monthlyEntries = sumLastN(30);
+      const activeDays = totalsByDay.filter((t) => t > 0).length;
+
+      // 최장/현재 연속 작성일 계산
+      let longestStreak = 0;
+      let currentStreakCalc = 0;
+      for (const total of totalsByDay) {
+        if (total > 0) {
+          currentStreakCalc += 1;
+          if (currentStreakCalc > longestStreak)
+            longestStreak = currentStreakCalc;
+        } else {
+          currentStreakCalc = 0;
+        }
+      }
+      // 현재 연속: 끝에서부터 연속된 활성 일수 계산
+      let currentStreak = 0;
+      for (let i = totalsByDay.length - 1; i >= 0; i -= 1) {
+        if (totalsByDay[i] > 0) currentStreak += 1;
+        else break;
+      }
+
+      // 최다 감정 및 상위 3개 감정
+      const avgEntries = Object.entries(stats.averageEmotions || {});
+      const topEmotionEntry = avgEntries.reduce(
+        (best, cur) => (cur[1] > (best?.[1] ?? -Infinity) ? cur : best),
+        undefined as [string, number] | undefined
+      );
+      const topEmotionName = topEmotionEntry
+        ? emotionLabelMap[topEmotionEntry[0]] || topEmotionEntry[0]
+        : "없음";
+      const top3Emotions = avgEntries
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([k, v]) => ({ name: emotionLabelMap[k] || k, value: v }));
+
+      const dateRange = {
+        start: sortedTrends[0]?.date,
+        end: sortedTrends[sortedTrends.length - 1]?.date,
+      };
       return (
         <div className="flex flex-col justify-center items-center w-full min-h-screen text-gray-900 bg-amber-50 min-w-screen dark:bg-gray-900 dark:text-white">
-          <div className="w-[50vw] flex flex-col">
+          <div className="flex flex-col pt-5 w-full px-mobile">
             <div className="mb-12 w-full">
               <div className="flex justify-between items-center mb-8">
                 <button
@@ -155,7 +223,77 @@ const StatsPage: React.FC = () => {
               <div className="grid grid-cols-1 gap-8 mb-12 w-full md:grid-cols-2">
                 <div className="p-6 bg-white rounded-xl border border-amber-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                   <h2 className="mb-4 text-2xl font-semibold">전체 통계</h2>
-                  <p className="text-lg">총 일기 수: {stats.totalEntries}개</p>
+                  <div className="grid grid-cols-2 gap-4 text-base">
+                    <div className="text-stone-600 dark:text-stone-300">
+                      총 일기 수
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {stats.totalEntries}개
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      최근 7일 작성
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {weeklyEntries}개
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      최근 30일 작성
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {monthlyEntries}개
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      활동한 일수
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {activeDays}일
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      최장 연속 작성
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {longestStreak}일
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      현재 연속 작성
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {currentStreak}일
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      가장 많은 감정
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {topEmotionName}
+                    </div>
+
+                    <div className="text-stone-600 dark:text-stone-300">
+                      상위 감정 Top3
+                    </div>
+                    <div className="text-lg font-semibold text-right">
+                      {top3Emotions
+                        .map((e) => `${e.name} ${e.value.toFixed(1)}%`)
+                        .join(" · ")}
+                    </div>
+
+                    {dateRange.start && dateRange.end && (
+                      <>
+                        <div className="text-stone-600 dark:text-stone-300">
+                          데이터 범위
+                        </div>
+                        <div className="text-lg font-semibold text-right">
+                          {new Date(dateRange.start).toLocaleDateString()} ~{" "}
+                          {new Date(dateRange.end).toLocaleDateString()}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="p-6 bg-white rounded-xl border border-amber-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                   <h3 className="mb-4 text-xl font-semibold">평균 감정 비율</h3>

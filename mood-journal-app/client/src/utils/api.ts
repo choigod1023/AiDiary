@@ -213,14 +213,14 @@ export const diaryApi = {
     totalEntries: number;
     averageEmotions: { [key: string]: number };
     emotionTrends: { date: string; emotions: { [key: string]: number } }[];
-  }> => api.get("api/diary/emotion-stats").json(),
+  }> => api.get("api/emotions/stats").json(),
 
   // 감정 분석 결과 조회
   getEmotionAnalysis: (
     limit?: number
   ): Promise<{ date: string; emotions: { [key: string]: number } }[]> =>
     api
-      .get("api/diary/emotion-analysis", {
+      .get("api/emotions/analysis", {
         searchParams: limit ? { limit: limit.toString() } : {},
       })
       .json(),
