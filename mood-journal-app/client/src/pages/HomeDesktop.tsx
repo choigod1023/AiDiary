@@ -83,7 +83,7 @@ const HomeDesktop: React.FC = () => {
   }, [authState.isAuthenticated, authState.isLoading]);
 
   return (
-    <div className="pt-20 w-full min-h-screen text-gray-900 bg-amber-50 dark:bg-gray-900 dark:text-white px-mobile">
+    <div className="pt-20 w-full min-h-screen text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-white px-mobile">
       <div className="grid grid-cols-1 gap-6 mx-auto max-w-screen-xl lg:grid-cols-12">
         {/* Desktop signature banner */}
         <div className="hidden justify-between items-center p-6 rounded-2xl ring-1 shadow-sm lg:flex lg:col-span-12 bg-white/90 dark:bg-gray-800/90 ring-black/5 dark:ring-white/10">

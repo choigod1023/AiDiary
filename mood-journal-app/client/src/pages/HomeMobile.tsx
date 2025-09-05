@@ -75,7 +75,7 @@ const HomeMobile: React.FC = () => {
   }, [authState.isAuthenticated, authState.isLoading]);
 
   return (
-    <div className="flex flex-col w-full text-gray-900 bg-amber-50 min-h-screen-mobile dark:bg-gray-900 dark:text-white sm:px-mobile">
+    <div className="flex flex-col w-full text-gray-900 bg-gray-50 min-h-screen-mobile dark:bg-gray-900 dark:text-white sm:px-mobile">
       {/* CTA gradient card */}
       <div className="pt-8 pb-6 px-mobile">
         <div className="p-5 text-white bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl shadow-md dark:from-blue-500 dark:to-indigo-600">
