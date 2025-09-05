@@ -98,6 +98,8 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
     onVisibilityChange: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    onAIFeedbackRequest: () => void;
+    aiLoading: boolean;
   }> = ({
     isOwner,
     isEditing,
@@ -107,6 +109,8 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
     onVisibilityChange,
     onEdit,
     onDelete,
+    onAIFeedbackRequest,
+    aiLoading,
   }) => {
     // 표시할 버튼들을 계산
     const buttons = [];
@@ -141,6 +145,20 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
         className:
           "px-2 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg border border-blue-700 transition-colors dark:bg-blue-600 dark:border-blue-500 h-10 flex items-center justify-center",
         text: "🔗 링크 복사",
+      });
+    }
+
+    // 한마디 듣기 버튼 (작성자만) - 데스크톱과 동일한 스타일
+    if (isOwner && !isEditing) {
+      buttons.push({
+        key: "ai-feedback",
+        onClick: onAIFeedbackRequest,
+        className: `px-2 py-2 text-xs font-medium rounded-lg border-2 transition-colors h-10 flex items-center justify-center ${
+          aiLoading
+            ? "bg-amber-400 text-stone-900 border-amber-500 cursor-wait dark:bg-yellow-500 dark:text-stone-900 dark:border-yellow-600"
+            : "bg-amber-700 text-amber-50 hover:bg-amber-800 border-amber-900 dark:bg-amber-600 dark:text-amber-50 dark:hover:bg-amber-500 dark:border-amber-600"
+        }`,
+        text: aiLoading ? "듣는 중..." : "🎵 한마디",
       });
     }
 
@@ -301,6 +319,8 @@ const DiaryDetail: React.FC<DiaryDetailProps> = ({
         onVisibilityChange={toggleVisibility}
         onEdit={() => setIsEditing(true)}
         onDelete={handleDelete}
+        onAIFeedbackRequest={onAIFeedbackRequest}
+        aiLoading={aiLoading}
       />
     </div>
   );

@@ -119,7 +119,7 @@ const App: React.FC = () => {
 
       // PWA 환경에서 body 배경색도 직접 변경
       document.body.style.backgroundColor = color;
-      
+
       // CSS 클래스도 함께 적용하여 일관성 유지
       if (color === "#111827") {
         document.body.classList.add("dark-mode");
@@ -128,9 +128,9 @@ const App: React.FC = () => {
         document.body.classList.add("light-mode");
         document.body.classList.remove("dark-mode");
       }
-      
+
       // 강제로 스타일 적용
-      document.body.style.setProperty('background-color', color, 'important');
+      document.body.style.setProperty("background-color", color, "important");
     };
 
     if (theme === "system") {
