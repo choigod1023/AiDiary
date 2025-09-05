@@ -26,7 +26,7 @@ const AppContent: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex flex-col p-0 w-full text-gray-900 bg-gray- min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
+      <div className="flex flex-col p-0 w-full text-gray-900 bg-gray-50 min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
         <Header />
 
         <div className="flex flex-col flex-1 justify-center items-center sm:px-mobile">
@@ -88,8 +88,34 @@ const App: React.FC = () => {
       const prefersDark =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (prefersDark) root.classList.add("dark");
-      else root.classList.remove("dark");
+      if (prefersDark) {
+        root.classList.add("dark");
+        updateThemeColor("#111827"); // gray-900
+      } else {
+        root.classList.remove("dark");
+        updateThemeColor("#ffffff"); // white
+      }
+    };
+
+    const updateThemeColor = (color: string) => {
+      const themeColorMeta = document.getElementById(
+        "theme-color-meta"
+      ) as HTMLMetaElement;
+      const tileColorMeta = document.getElementById(
+        "msapplication-tile-color"
+      ) as HTMLMetaElement;
+      const appleStatusBarMeta = document.getElementById(
+        "apple-status-bar-style"
+      ) as HTMLMetaElement;
+
+      if (themeColorMeta) themeColorMeta.content = color;
+      if (tileColorMeta) tileColorMeta.content = color;
+
+      // iOS Safari 상태바 스타일도 함께 변경
+      if (appleStatusBarMeta) {
+        appleStatusBarMeta.content =
+          color === "#111827" ? "black-translucent" : "default";
+      }
     };
 
     if (theme === "system") {
@@ -99,17 +125,20 @@ const App: React.FC = () => {
       const listener = () => applySystemPref();
       if (mq && mq.addEventListener) mq.addEventListener("change", listener);
       // 구형 브라우저 대응
-      // @ts-ignore
       if (mq && mq.addListener) mq.addListener(listener);
       return () => {
         if (mq && mq.removeEventListener)
           mq.removeEventListener("change", listener);
-        // @ts-ignore
         if (mq && mq.removeListener) mq.removeListener(listener);
       };
     } else {
-      if (theme === "dark") root.classList.add("dark");
-      else root.classList.remove("dark");
+      if (theme === "dark") {
+        root.classList.add("dark");
+        updateThemeColor("#111827"); // gray-900
+      } else {
+        root.classList.remove("dark");
+        updateThemeColor("#ffffff"); // white
+      }
     }
 
     localStorage.setItem("theme", theme);

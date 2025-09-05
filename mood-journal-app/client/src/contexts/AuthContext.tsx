@@ -125,7 +125,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           if (response.token)
             localStorage.setItem("auth_token", response.token);
-        } catch {}
+        } catch {
+          // localStorage unavailable (Safari private mode etc.)
+        }
 
         setAuthState({
           user,
@@ -146,7 +148,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await authApi.logout().catch(() => undefined);
     try {
       localStorage.removeItem("auth_token");
-    } catch {}
+    } catch {
+      // localStorage unavailable (Safari private mode etc.)
+    }
     setAuthState({
       user: null,
       token: null,
