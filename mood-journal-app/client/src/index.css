@@ -23,7 +23,7 @@ body {
   font-weight: 400;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #ffffff; /* 기본값을 흰색으로 변경 */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -31,6 +31,7 @@ body {
   /* iPhone 13 Pro specific optimizations */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
+  transition: background-color 0.3s ease;
 }
 
 a {
@@ -71,6 +72,12 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
+  body {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
   a:hover {
     color: #747bff;
   }
@@ -232,6 +239,11 @@ select:focus {
     background-color: #0f0f0f;
   }
 
+  body {
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #111827; /* gray-900 */
+  }
+
   input,
   textarea,
   select {
@@ -241,18 +253,13 @@ select:focus {
   }
 }
 
-/* Light mode optimizations for mobile */
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
+/* JavaScript로 동적 클래스 적용 시 사용 - !important로 우선순위 높임 */
+body.light-mode {
+  color: #213547 !important;
+  background-color: #ffffff !important;
+}
 
-  input,
-  textarea,
-  select {
-    background-color: #ffffff;
-    border-color: #d1d5db;
-    color: #111827;
-  }
+body.dark-mode {
+  color: rgba(255, 255, 255, 0.87) !important;
+  background-color: #111827 !important;
 }
