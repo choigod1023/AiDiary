@@ -26,7 +26,7 @@ const AppContent: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex flex-col p-0 w-full text-gray-900 bg-gray-50 min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
+      <div className="flex flex-col p-0 w-full text-gray-900 bg-gray- min-h-screen-mobile dark:bg-gray-900 dark:text-gray-100">
         <Header />
 
         <div className="flex flex-col flex-1 justify-center items-center sm:px-mobile">
@@ -83,11 +83,35 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
+
+    const applySystemPref = () => {
+      const prefersDark =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) root.classList.add("dark");
+      else root.classList.remove("dark");
+    };
+
+    if (theme === "system") {
+      applySystemPref();
+      const mq =
+        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+      const listener = () => applySystemPref();
+      if (mq && mq.addEventListener) mq.addEventListener("change", listener);
+      // 구형 브라우저 대응
+      // @ts-ignore
+      if (mq && mq.addListener) mq.addListener(listener);
+      return () => {
+        if (mq && mq.removeEventListener)
+          mq.removeEventListener("change", listener);
+        // @ts-ignore
+        if (mq && mq.removeListener) mq.removeListener(listener);
+      };
     } else {
-      root.classList.remove("dark");
+      if (theme === "dark") root.classList.add("dark");
+      else root.classList.remove("dark");
     }
+
     localStorage.setItem("theme", theme);
   }, [theme]);
 
