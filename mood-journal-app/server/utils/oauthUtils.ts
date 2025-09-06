@@ -122,40 +122,8 @@ export async function verifyGoogleToken(accessToken: string) {
 }
 
 /**
- * 네이버 OAuth 액세스 토큰을 검증하고 사용자 정보를 반환합니다.
- * @param accessToken 네이버 OAuth 액세스 토큰
- * @returns 네이버 사용자 정보
- */
-export async function verifyNaverToken(accessToken: string) {
-  try {
-    // 네이버 사용자 정보 API 호출
-    const response = await axios.get("https://openapi.naver.com/v1/nid/me", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    const userData = response.data.response;
-    if (!userData) {
-      throw new Error("Invalid Naver user data");
-    }
-
-    return {
-      id: userData.id,
-      email: userData.email,
-      name: userData.name,
-      picture: userData.profile_image,
-      verified: true, // 네이버는 이메일 인증이 완료된 사용자만 제공
-    };
-  } catch (error) {
-    console.error("Naver token verification failed:", error);
-    throw new Error("Invalid Naver access token");
-  }
-}
-
-/**
  * OAuth 제공자별 사용자 정보를 표준화된 형태로 변환합니다.
- * @param provider OAuth 제공자 (google, naver)
+ * @param provider OAuth 제공자 (google)
  * @param userData OAuth 제공자로부터 받은 사용자 데이터
  * @returns 표준화된 사용자 정보
  */

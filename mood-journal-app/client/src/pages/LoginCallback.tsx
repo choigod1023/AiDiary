@@ -8,17 +8,24 @@ const LoginCallback: React.FC = () => {
   const { checkAuth } = useAuth();
 
   React.useEffect(() => {
+    // Google 로그인 또는 일반 리다이렉트
     (async () => {
-      // 서버 세션 확인 후 원래 위치로 이동
       await checkAuth();
-      const storedFrom = sessionStorage.getItem("post_login_from");
+      const from =
+        sessionStorage.getItem("post_login_from") || params.get("from") || "/";
       sessionStorage.removeItem("post_login_from");
-      const from = storedFrom || params.get("from") || "/";
       navigate(from, { replace: true });
     })();
   }, [checkAuth, navigate, params]);
 
-  return null;
+  return (
+    <div className="flex justify-center items-center w-full h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">로그인 처리 중...</p>
+      </div>
+    </div>
+  );
 };
 
 export default LoginCallback;

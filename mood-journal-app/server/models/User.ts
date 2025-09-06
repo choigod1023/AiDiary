@@ -4,7 +4,7 @@ export interface IUser {
   email: string;
   name: string;
   avatar?: string;
-  provider: "google" | "naver";
+  provider: "google";
   providerId: string;
   createdAt: Date;
   lastLoginAt: Date;
@@ -33,7 +33,7 @@ const UserSchema = new Schema<IUserDocument>({
   provider: {
     type: String,
     required: true,
-    enum: ["google", "github", "naver"],
+    enum: ["google"],
   },
   providerId: {
     type: String,

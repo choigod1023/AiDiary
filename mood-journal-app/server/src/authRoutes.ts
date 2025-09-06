@@ -2,11 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 import { authenticateToken, AuthenticatedRequest } from "../middleware/auth";
-import {
-  verifyGoogleToken,
-  verifyNaverToken,
-  normalizeOAuthUser,
-} from "../utils/oauthUtils";
+import { verifyGoogleToken, normalizeOAuthUser } from "../utils/oauthUtils";
 
 /**
  * @swagger
@@ -34,7 +30,7 @@ import {
  *           description: 사용자 프로필 이미지 URL
  *         provider:
  *           type: string
- *           enum: [google, naver]
+ *           enum: [google]
  *           description: 소셜 로그인 제공자
  *         providerId:
  *           type: string
@@ -220,152 +216,6 @@ router.post("/google", async (req, res) => {
     res.status(500).json({
       error: "Login failed",
       message: "Google 로그인에 실패했습니다.",
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/auth/naver:
- *   post:
- *     summary: 네이버 OAuth 로그인
- *     description: 네이버 OAuth 액세스 토큰을 사용하여 로그인하거나 계정을 생성합니다.
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
- *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
- *       400:
- *         description: 잘못된 요청 (액세스 토큰 누락)
- *       500:
- *         description: 서버 오류
- */
-// 네이버 OAuth 토큰 검증 및 사용자 생성/로그인
-router.post("/naver", async (req, res) => {
-  try {
-    const { accessToken } = req.body;
-
-    if (!accessToken) {
-      return res.status(400).json({
-        error: "Access token required",
-        message: "네이버 액세스 토큰이 필요합니다.",
-      });
-    }
-
-    // 네이버 OAuth API로 토큰 검증 및 사용자 정보 가져오기
-    const naverUser = await verifyNaverToken(accessToken);
-    const normalizedUser = normalizeOAuthUser("naver", naverUser);
-
-    // 기존 사용자 확인 또는 새 사용자 생성
-    let user = await User.findOne({
-      provider: "naver",
-      providerId: normalizedUser.providerId,
-    });
-
-    if (!user) {
-      // 새 사용자 생성
-      user = new User({
-        email: normalizedUser.email,
-        name: normalizedUser.name,
-        avatar: normalizedUser.avatar,
-        provider: "naver",
-        providerId: normalizedUser.providerId,
-      });
-      await user.save();
-    } else {
-      // 마지막 로그인 시간 업데이트
-      user.lastLoginAt = new Date();
-      await user.save();
-    }
-
-    // JWT 토큰 생성
-    const token = jwt.sign(
-      {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        provider: user.provider,
-      },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    const isProd = process.env.NODE_ENV === "production";
-    // 도메인 설정 제거 - 클라이언트와 서버가 다른 도메인이므로
-
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd,
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
-      .cookie("user_name", encodeURIComponent(user.name || ""), {
-        httpOnly: false,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd,
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie("user_email", encodeURIComponent(user.email || ""), {
-        httpOnly: false,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd,
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie("user_id", user._id?.toString() || "", {
-        httpOnly: false,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd,
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie("user_provider", user.provider, {
-        httpOnly: false,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd,
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie(
-        "user_avatar",
-        user.avatar ? encodeURIComponent(user.avatar) : "",
-        {
-          httpOnly: false,
-          sameSite: isProd ? "none" : "lax",
-          secure: isProd,
-          path: "/",
-          maxAge: 30 * 24 * 60 * 60 * 1000,
-        }
-      )
-      .json({
-        success: true,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar,
-          provider: user.provider,
-        },
-        token: token,
-        message: "네이버 로그인 성공",
-      });
-  } catch (error) {
-    console.error("네이버 login error:", error);
-    res.status(500).json({
-      error: "Login failed",
-      message: "네이버 로그인에 실패했습니다.",
     });
   }
 });
