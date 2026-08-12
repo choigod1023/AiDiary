@@ -1,5 +1,7 @@
 # AiDiary — AI 감정 일기 (MoodJournal)
 
+**한국어** · [日本語](README.ja.md) · [English](README.en.md)
+
 > AI가 당신의 일기를 요약하고, 감정 상태를 이모지로 표현해드립니다.
 
 일기를 쓰면 OpenAI가 **한 줄 위트 있는 제목**을 자동으로 지어주고, 글에 담긴 **감정을 이모지로 변환**하며,
