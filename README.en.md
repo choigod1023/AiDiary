@@ -171,7 +171,7 @@ mood-journal-app/
 | Item | Detail |
 |---|---|
 | **Contribution share** | **100%** (solo development) |
-| **Commits** | 93 / 93 (mine / all human commits) |
+| **Commits** | 95 / 95 (mine / all human commits) |
 | **Contributors** | 1 |
 
-<sub>Contribution share is counted by commit author email; bot and automation commits are excluded.</sub>
+<sub>Counting basis: commits reachable from **every branch** on origin (merge commits and empty commits excluded), counted by commit author email with one person’s multiple addresses merged; bot and automation commits are excluded.</sub>
